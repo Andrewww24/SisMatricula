@@ -1,0 +1,1039 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniMatrícula — Sistema de Matrícula Universitaria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     MODAL: Agregar / Editar curso
+============================================================ -->
+<div class="modal-overlay" id="modal-curso">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Agregar curso al catálogo</div>
+        <div class="text-sm text-muted mt-1">Completa todos los campos requeridos</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-curso')">✕</button>
+    </div>
+    <div class="form-grid form-grid-2">
+      <div class="field" style="grid-column:1/-1">
+        <label>Nombre del curso *</label>
+        <input type="text" placeholder="ej. Cálculo Diferencial">
+      </div>
+      <div class="field">
+        <label>Código</label>
+        <input type="text" placeholder="ej. MAT-101" style="font-family:var(--font-mono)">
+      </div>
+      <div class="field">
+        <label>Créditos</label>
+        <input type="number" placeholder="4" min="1" max="12">
+      </div>
+      <div class="field">
+        <label>Carrera</label>
+        <select>
+          <option>Ingeniería en Sistemas</option>
+          <option>Contabilidad</option>
+          <option>Administración</option>
+          <option>Derecho</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Estado</label>
+        <select>
+          <option>Activo</option>
+          <option>Inactivo</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Prerrequisitos</label>
+        <select>
+          <option value="">— Sin prerrequisitos —</option>
+          <option>MAT-100 · Precálculo</option>
+          <option>PRG-100 · Fundamentos de Programación</option>
+          <option>ADM-101 · Introducción a la Administración</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Descripción</label>
+        <textarea rows="2" placeholder="Descripción breve del curso..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-curso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-curso')">💾 Guardar curso</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Agregar grupo -->
+<div class="modal-overlay" id="modal-grupo">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Crear grupo / sección</div>
+        <div class="text-sm text-muted mt-1">RF-08 · Gestión de oferta académica</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-grupo')">✕</button>
+    </div>
+    <div class="form-grid form-grid-2">
+      <div class="field">
+        <label>Curso *</label>
+        <select><option>Cálculo Diferencial</option><option>Programación I</option><option>Contabilidad General</option></select>
+      </div>
+      <div class="field">
+        <label>Período *</label>
+        <select><option>I-2025</option><option>II-2025</option><option>III-2025</option></select>
+      </div>
+      <div class="field">
+        <label>Número de grupo</label>
+        <input type="text" placeholder="01">
+      </div>
+      <div class="field">
+        <label>Aula</label>
+        <select><option>A-101 (cap. 40)</option><option>B-205 (cap. 30)</option><option>Lab-3 (cap. 25)</option></select>
+      </div>
+      <div class="field">
+        <label>Cupo máximo *</label>
+        <input type="number" value="30" min="1">
+      </div>
+      <div class="field">
+        <label>Docente</label>
+        <select><option>Dr. Ramírez Castro</option><option>MSc. López Vega</option><option>Lic. Mora Salas</option></select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Horario — Día y hora</label>
+        <div class="flex gap-2 mt-1">
+          <select style="flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.85rem">
+            <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option>
+          </select>
+          <input type="time" value="08:00" style="flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.85rem">
+          <span class="flex items-center text-muted text-sm">a</span>
+          <input type="time" value="10:00" style="flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.85rem">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-grupo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-grupo')">💾 Crear grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 1: LOGIN
+============================================================ -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🎓</div>
+      <div class="login-logo-text">Uni<span>Matrícula</span></div>
+    </div>
+    <div class="login-badge">🔒 Acceso institucional seguro</div>
+    <div class="login-title">Bienvenido al sistema</div>
+    <div class="login-sub">Iniciá sesión con tu cuenta institucional o tus credenciales</div>
+
+    <button class="sso-btn" onclick="goTo('screen-dash-estudiante')">
+      🏛️ Iniciar sesión con SSO Institucional
+    </button>
+
+    <div class="login-divider">o con credenciales directas</div>
+
+    <div class="login-field">
+      <label class="login-label">Cédula o usuario</label>
+      <input class="login-input" type="text" placeholder="1-0000-0000">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" type="password" placeholder="••••••••">
+    </div>
+    <button class="login-input-btn" onclick="goTo('screen-dash-estudiante')">Ingresar al sistema →</button>
+
+    <div class="login-footer">
+      Protegido con cifrado TLS 1.3 · WCAG 2.1 AA<br>
+      ¿Problemas de acceso? <a href="#" style="color:#60A5FA">Contactar soporte TI</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCREEN 2: DASHBOARD ESTUDIANTE
+============================================================ -->
+<div id="screen-dash-estudiante" class="screen">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-logo-text">UniMatrícula <small>Sistema académico</small></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">MR</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">María Rodríguez</div>
+        <div class="sidebar-user-role">Estudiante · 2025-001234</div>
+      </div>
+    </div>
+    <div class="sidebar-role-switch">
+      <div class="role-btn active" onclick="switchRole('estudiante')">Estudiante</div>
+      <div class="role-btn" onclick="switchRole('admin')">Admin</div>
+      <div class="role-btn" onclick="switchRole('tesoreria')">Tesorería</div>
+    </div>
+
+    <div class="sidebar-section">Principal</div>
+    <div class="nav-item active" onclick="navTo('dash-estudiante')"><span class="nav-icon">🏠</span> Inicio</div>
+    <div class="nav-item" onclick="navTo('matricula')"><span class="nav-icon">📋</span> Realizar matrícula <span class="nav-badge">!</span></div>
+    <div class="nav-item" onclick="navTo('horario')"><span class="nav-icon">📅</span> Mi horario</div>
+    <div class="nav-item" onclick="navTo('historial')"><span class="nav-icon">📚</span> Historial académico</div>
+
+    <div class="sidebar-section">Finanzas</div>
+    <div class="nav-item" onclick="navTo('pago')"><span class="nav-icon">💳</span> Pagos y facturas</div>
+    <div class="nav-item" onclick="navTo('estado-cuenta')"><span class="nav-icon">📄</span> Estado de cuenta</div>
+
+    <div class="sidebar-section">Soporte</div>
+    <div class="nav-item"><span class="nav-icon">🔔</span> Notificaciones <span class="nav-badge">3</span></div>
+    <div class="nav-item"><span class="nav-icon">❓</span> Ayuda</div>
+
+    <div class="sidebar-bottom">
+      <div class="nav-item" onclick="goTo('screen-login')"><span class="nav-icon">🚪</span> Cerrar sesión</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <div class="topbar-breadcrumb">Estudiante <span>›</span> Inicio</div>
+        <div class="topbar-title" id="topbar-title-est">Dashboard</div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar cursos, grupos…">
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn">🔔<span class="notif-dot"></span></button>
+        <button class="icon-btn" onclick="goTo('screen-login')">🚪</button>
+      </div>
+    </header>
+
+    <!-- PAGE: DASH ESTUDIANTE -->
+    <div class="page-content" id="page-dash-estudiante">
+      <div class="student-banner">
+        <div class="student-banner-text">
+          <h2>Hola, María 👋</h2>
+          <p>Período de matrícula activo — verificá tu estado antes de inscribirte</p>
+          <div class="flex gap-2 mt-3">
+            <button class="btn btn-primary btn-sm" onclick="navTo('matricula')">📋 Ir a matrícula</button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:var(--white);border:1px solid rgba(255,255,255,.2)">📅 Ver horario</button>
+          </div>
+        </div>
+        <div class="banner-periodo">
+          <div class="banner-periodo-label">Período activo</div>
+          <div class="banner-periodo-val">I Cuatrimestre 2025</div>
+          <div class="banner-periodo-dates">15 ene – 30 abr 2025</div>
+          <div class="mt-2"><span class="badge badge-green" style="font-size:.68rem">● Matrícula abierta</span></div>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card">
+          <div class="kpi-icon blue">📚</div>
+          <div>
+            <div class="kpi-label">Cursos inscritos</div>
+            <div class="kpi-value">4</div>
+            <div class="kpi-change">de 5 máx. este período</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon teal">⭐</div>
+          <div>
+            <div class="kpi-label">Créditos del período</div>
+            <div class="kpi-value">16</div>
+            <div class="kpi-change up">↑ Dentro del límite</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green">✅</div>
+          <div>
+            <div class="kpi-label">Estado financiero</div>
+            <div class="kpi-value" style="font-size:1rem;margin-top:4px"><span class="badge badge-green">Al día</span></div>
+            <div class="kpi-change up">Sin deudas pendientes</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon amber">📊</div>
+          <div>
+            <div class="kpi-label">Promedio acumulado</div>
+            <div class="kpi-value">8.4</div>
+            <div class="kpi-change up">↑ 0.2 respecto al período anterior</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">Mis cursos — I Cuatrimestre 2025</div>
+            <div class="card-sub">Cursos actualmente inscritos</div>
+            <div class="curso-cards" style="grid-template-columns:1fr 1fr">
+              <div class="curso-card">
+                <div class="curso-card-top">
+                  <div><div class="curso-name">Cálculo Diferencial</div><div class="curso-code">MAT-201</div></div>
+                  <div class="curso-color-dot" style="background:var(--blue)"></div>
+                </div>
+                <div class="prog-bar"><div class="prog-fill blue" style="width:72%"></div></div>
+                <div class="curso-meta">
+                  <div class="curso-meta-item">📖 4 créditos</div>
+                  <div class="curso-meta-item">👤 Dr. Ramírez</div>
+                </div>
+              </div>
+              <div class="curso-card">
+                <div class="curso-card-top">
+                  <div><div class="curso-name">Programación II</div><div class="curso-code">PRG-202</div></div>
+                  <div class="curso-color-dot" style="background:var(--teal)"></div>
+                </div>
+                <div class="prog-bar"><div class="prog-fill" style="width:60%;background:var(--teal)"></div></div>
+                <div class="curso-meta">
+                  <div class="curso-meta-item">📖 4 créditos</div>
+                  <div class="curso-meta-item">👤 MSc. López</div>
+                </div>
+              </div>
+              <div class="curso-card">
+                <div class="curso-card-top">
+                  <div><div class="curso-name">Inglés Técnico</div><div class="curso-code">ING-101</div></div>
+                  <div class="curso-color-dot" style="background:var(--amber)"></div>
+                </div>
+                <div class="prog-bar"><div class="prog-fill amber" style="width:45%"></div></div>
+                <div class="curso-meta">
+                  <div class="curso-meta-item">📖 4 créditos</div>
+                  <div class="curso-meta-item">👤 Lic. Castro</div>
+                </div>
+              </div>
+              <div class="curso-card">
+                <div class="curso-card-top">
+                  <div><div class="curso-name">Estadística Básica</div><div class="curso-code">EST-101</div></div>
+                  <div class="curso-color-dot" style="background:var(--green)"></div>
+                </div>
+                <div class="prog-bar"><div class="prog-fill green" style="width:55%"></div></div>
+                <div class="curso-meta">
+                  <div class="curso-meta-item">📖 4 créditos</div>
+                  <div class="curso-meta-item">👤 Dr. Mora</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <div class="card">
+            <div class="card-title">Actividad reciente</div>
+            <div class="card-sub">Últimas acciones en el sistema</div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-dot green">✓</div>
+                <div class="timeline-content">
+                  <div class="timeline-label">Pago confirmado</div>
+                  <div class="timeline-detail">₡120,000 — Matrícula I-2025</div>
+                  <div class="timeline-time">Hoy, 9:45 am</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot blue">📋</div>
+                <div class="timeline-content">
+                  <div class="timeline-label">Matrícula confirmada</div>
+                  <div class="timeline-detail">4 cursos · 16 créditos</div>
+                  <div class="timeline-time">Hoy, 9:30 am</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot amber">🔔</div>
+                <div class="timeline-content">
+                  <div class="timeline-label">Notificación recibida</div>
+                  <div class="timeline-detail">Período de matrícula abierto</div>
+                  <div class="timeline-time">Ayer, 8:00 am</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-dot blue">🔐</div>
+                <div class="timeline-content">
+                  <div class="timeline-label">Inicio de sesión</div>
+                  <div class="timeline-detail">Acceso SSO institucional</div>
+                  <div class="timeline-time">Ayer, 7:58 am</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Estado de matrícula</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+              <div>
+                <div class="flex justify-between text-sm mb-1"><span class="text-muted">Créditos inscritos</span><span style="font-weight:600">16 / 20</span></div>
+                <div class="prog-bar"><div class="prog-fill blue" style="width:80%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1"><span class="text-muted">Cursos inscritos</span><span style="font-weight:600">4 / 5</span></div>
+                <div class="prog-bar"><div class="prog-fill teal" style="width:80%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-1"><span class="text-muted">Pago de matrícula</span><span style="font-weight:600;color:var(--green)">Completado</span></div>
+                <div class="prog-bar"><div class="prog-fill green" style="width:100%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: MATRÍCULA WIZARD -->
+    <div class="page-content" id="page-matricula" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Realizar matrícula</h1>
+          <p>Período I-2025 · Matrícula abierta hasta el 30 de enero</p>
+        </div>
+      </div>
+
+      <!-- Wizard steps -->
+      <div class="wizard-steps">
+        <div class="wstep">
+          <div class="wstep-circle active" id="ws1">1</div>
+          <div class="wstep-info"><div class="wstep-name">Selección</div><div class="wstep-desc">Elegí tus cursos</div></div>
+        </div>
+        <div class="wstep-line" id="wl1"></div>
+        <div class="wstep">
+          <div class="wstep-circle todo" id="ws2">2</div>
+          <div class="wstep-info"><div class="wstep-name">Validación</div><div class="wstep-desc">Verificar requisitos</div></div>
+        </div>
+        <div class="wstep-line" id="wl2"></div>
+        <div class="wstep">
+          <div class="wstep-circle todo" id="ws3">3</div>
+          <div class="wstep-info"><div class="wstep-name">Pago</div><div class="wstep-desc">Confirmar pago</div></div>
+        </div>
+        <div class="wstep-line" id="wl3"></div>
+        <div class="wstep">
+          <div class="wstep-circle todo" id="ws4">✓</div>
+          <div class="wstep-info"><div class="wstep-name">Confirmación</div><div class="wstep-desc">Matrícula firme</div></div>
+        </div>
+      </div>
+
+      <!-- Step 1: Selección -->
+      <div id="step-seleccion">
+        <div class="alert alert-info">
+          ℹ️ <strong>Restricciones activas:</strong> máximo 20 créditos por período · sin deudas pendientes · prerrequisitos verificados automáticamente
+        </div>
+        <div class="matricula-layout">
+          <!-- Oferta académica -->
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--gray-200)">
+              <div class="card-title" style="margin-bottom:10px">Oferta académica — I-2025</div>
+              <div class="course-search-bar">
+                <input type="text" placeholder="🔍  Buscar por nombre, código o carrera…">
+                <select style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.85rem;background:var(--white)">
+                  <option>Todas las carreras</option>
+                  <option>Ing. Sistemas</option>
+                  <option>Contabilidad</option>
+                </select>
+              </div>
+            </div>
+            <div class="course-row-header">
+              <span>Curso</span><span>Horario</span><span>Créditos</span><span>Cupo</span><span>Estado</span><span>Acción</span>
+            </div>
+            <!-- Rows -->
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Álgebra Lineal</strong><small>MAT-202 · Ing. Sistemas</small></div>
+              <div class="text-sm text-muted">Lun / Mié<br>7:00–9:00</div>
+              <div class="text-sm" style="font-weight:600">4</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">22/30</div><div class="prog-bar" style="width:70px"><div class="prog-fill blue" style="width:73%"></div></div></div>
+              <span class="badge badge-green">Disponible</span>
+              <button class="add-btn" onclick="addCurso('Álgebra Lineal','MAT-202',4,'Lun/Mié 7-9am')">+ Agregar</button>
+            </div>
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Física General I</strong><small>FIS-101 · Ing. Sistemas</small></div>
+              <div class="text-sm text-muted">Mar / Jue<br>9:00–11:00</div>
+              <div class="text-sm" style="font-weight:600">4</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">30/30</div><div class="prog-bar" style="width:70px"><div class="prog-fill red" style="width:100%"></div></div></div>
+              <span class="badge badge-red">Lleno</span>
+              <button class="add-btn" disabled>Lleno</button>
+            </div>
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Programación Web</strong><small>PRG-305 · Ing. Sistemas</small></div>
+              <div class="text-sm text-muted">Mié / Vie<br>13:00–15:00</div>
+              <div class="text-sm" style="font-weight:600">3</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">18/35</div><div class="prog-bar" style="width:70px"><div class="prog-fill teal" style="width:51%"></div></div></div>
+              <span class="badge badge-green">Disponible</span>
+              <button class="add-btn" onclick="addCurso('Programación Web','PRG-305',3,'Mié/Vie 1-3pm')">+ Agregar</button>
+            </div>
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Base de Datos I</strong><small>PRG-310 · Ing. Sistemas</small></div>
+              <div class="text-sm text-muted">Lun / Jue<br>15:00–17:00</div>
+              <div class="text-sm" style="font-weight:600">4</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">8/30</div><div class="prog-bar" style="width:70px"><div class="prog-fill green" style="width:27%"></div></div></div>
+              <span class="badge badge-green">Disponible</span>
+              <button class="add-btn" onclick="addCurso('Base de Datos I','PRG-310',4,'Lun/Jue 3-5pm')">+ Agregar</button>
+            </div>
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Ética Profesional</strong><small>HUM-101 · General</small></div>
+              <div class="text-sm text-muted">Vie<br>10:00–13:00</div>
+              <div class="text-sm" style="font-weight:600">2</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">12/40</div><div class="prog-bar" style="width:70px"><div class="prog-fill amber" style="width:30%"></div></div></div>
+              <span class="badge badge-green">Disponible</span>
+              <button class="add-btn" onclick="addCurso('Ética Profesional','HUM-101',2,'Vie 10am-1pm')">+ Agregar</button>
+            </div>
+            <div class="course-row">
+              <div class="course-name-cell"><strong>Investigación Operativa</strong><small>MAT-401 · Ing. Sistemas</small></div>
+              <div class="text-sm text-muted">Mar<br>13:00–17:00</div>
+              <div class="text-sm" style="font-weight:600">4</div>
+              <div class="cupo-bar"><div class="cupo-bar-label">5/30</div><div class="prog-bar" style="width:70px"><div class="prog-fill blue" style="width:17%"></div></div></div>
+              <span class="badge badge-amber">Prereq. faltante</span>
+              <button class="add-btn" disabled>Bloqueado</button>
+            </div>
+          </div>
+
+          <!-- Carrito -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-title">🛒 Cursos seleccionados</div>
+              <div class="card-sub">Revisa antes de continuar</div>
+              <div id="carrito-lista">
+                <div class="text-sm text-muted" style="text-align:center;padding:20px 0">Ningún curso seleccionado aún</div>
+              </div>
+              <div class="carrito-total" id="carrito-total" style="display:none">
+                <span class="carrito-total-label">Total créditos</span>
+                <span class="carrito-total-val" id="total-creditos">0</span>
+              </div>
+              <button class="btn btn-primary w-full mt-3" id="btn-continuar" style="display:none" onclick="nextStep()">
+                Continuar a validación →
+              </button>
+            </div>
+
+            <div class="card">
+              <div class="card-title">⚠️ Restricciones del período</div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-muted">Créditos seleccionados</span><span id="creditos-indicator" style="font-weight:600">0 / 20</span></div>
+                  <div class="prog-bar"><div class="prog-fill blue" id="creditos-bar" style="width:0%"></div></div>
+                </div>
+                <div class="flex gap-2 items-center text-sm"><span>✅</span><span class="text-muted">Sin deuda pendiente</span></div>
+                <div class="flex gap-2 items-center text-sm"><span>✅</span><span class="text-muted">Acceso SSO activo</span></div>
+                <div class="flex gap-2 items-center text-sm"><span>⚠️</span><span class="text-muted">Verificar prerrequisitos</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Validación (oculto) -->
+      <div id="step-validacion" style="display:none">
+        <div class="alert alert-success">✅ <strong>Validación completada.</strong> Todos los cursos cumplen los requisitos académicos y financieros.</div>
+        <div class="card">
+          <div class="card-title">Resultado de validaciones</div>
+          <div class="card-sub">RF-12 · El sistema verificó automáticamente todos los criterios</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <div class="flex gap-3 items-center" style="padding:10px;background:var(--green-light);border-radius:var(--radius-sm)">
+              <span style="font-size:20px">✅</span>
+              <div><strong class="text-sm">Cupos disponibles</strong><div class="text-xs text-muted">Todos los grupos tienen espacio disponible</div></div>
+            </div>
+            <div class="flex gap-3 items-center" style="padding:10px;background:var(--green-light);border-radius:var(--radius-sm)">
+              <span style="font-size:20px">✅</span>
+              <div><strong class="text-sm">Sin choques de horario</strong><div class="text-xs text-muted">Los horarios seleccionados no se superponen</div></div>
+            </div>
+            <div class="flex gap-3 items-center" style="padding:10px;background:var(--green-light);border-radius:var(--radius-sm)">
+              <span style="font-size:20px">✅</span>
+              <div><strong class="text-sm">Prerrequisitos cumplidos</strong><div class="text-xs text-muted">Historial académico verificado</div></div>
+            </div>
+            <div class="flex gap-3 items-center" style="padding:10px;background:var(--green-light);border-radius:var(--radius-sm)">
+              <span style="font-size:20px">✅</span>
+              <div><strong class="text-sm">Sin restricciones financieras</strong><div class="text-xs text-muted">Cuenta sin deudas morosas</div></div>
+            </div>
+            <div class="flex gap-3 items-center" style="padding:10px;background:var(--green-light);border-radius:var(--radius-sm)">
+              <span style="font-size:20px">✅</span>
+              <div><strong class="text-sm">Límite de créditos respetado</strong><div class="text-xs text-muted" id="val-creditos-txt">Créditos dentro del límite permitido</div></div>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button class="btn btn-secondary" onclick="prevStep()">← Volver</button>
+            <button class="btn btn-primary" onclick="nextStep()">Continuar a pago →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Pago (oculto) -->
+      <div id="step-pago" style="display:none">
+        <div class="payment-layout">
+          <div class="card">
+            <div class="card-title">Método de pago</div>
+            <div class="card-sub">RF-17 · Integración con pasarela de pago institucional</div>
+            <div class="payment-methods">
+              <div class="payment-method selected" onclick="selectPayMethod(this)">
+                <div class="payment-method-icon">💳</div>
+                <div><div class="payment-method-name">Tarjeta de crédito / débito</div><div class="payment-method-desc">Visa, Mastercard, Amex</div></div>
+                <input type="radio" class="payment-method-radio" checked>
+              </div>
+              <div class="payment-method" onclick="selectPayMethod(this)">
+                <div class="payment-method-icon">🏦</div>
+                <div><div class="payment-method-name">Transferencia bancaria</div><div class="payment-method-desc">SINPE Móvil o transferencia IBAN</div></div>
+                <input type="radio" class="payment-method-radio">
+              </div>
+              <div class="payment-method" onclick="selectPayMethod(this)">
+                <div class="payment-method-icon">🪙</div>
+                <div><div class="payment-method-name">Pago en caja</div><div class="payment-method-desc">Presencial en tesorería universitaria</div></div>
+                <input type="radio" class="payment-method-radio">
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Número de tarjeta</label>
+                  <input type="text" placeholder="1234 5678 9012 3456" style="font-family:var(--font-mono)">
+                </div>
+                <div class="card-input-group">
+                  <div class="field">
+                    <label>Vencimiento</label>
+                    <input type="text" placeholder="MM/AA">
+                  </div>
+                  <div class="field">
+                    <label>CVV</label>
+                    <input type="text" placeholder="•••">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Nombre en la tarjeta</label>
+                  <input type="text" placeholder="MARÍA RODRÍGUEZ">
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button class="btn btn-secondary" onclick="prevStep()">← Volver</button>
+              <button class="btn btn-primary" onclick="navTo('confirmacion')" style="flex:1">🔒 Confirmar y pagar</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-title">Resumen de pago</div>
+              <div id="resumen-cursos-pago"></div>
+              <div class="resumen-total">
+                <span class="resumen-total-label">Total a pagar</span>
+                <span class="resumen-total-val" id="total-pagar">₡0</span>
+              </div>
+              <div class="text-xs text-muted mt-3" style="line-height:1.6">
+                🔒 Pago procesado mediante pasarela segura certificada. Los datos de tarjeta no son almacenados en nuestros servidores.
+              </div>
+            </div>
+            <div class="card mt-3">
+              <div class="card-title">Descuentos aplicados</div>
+              <div class="resumen-item"><span class="resumen-item-label">Beca socioeconómica</span><span class="badge badge-green">- 15%</span></div>
+              <div class="resumen-item"><span class="resumen-item-label">Matrícula temprana</span><span class="badge badge-teal">- 5%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: HORARIO -->
+    <div class="page-content" id="page-horario" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Mi horario</h1><p>I Cuatrimestre 2025 — 4 cursos · 16 créditos</p></div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary">📥 Exportar PDF</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="schedule-grid">
+          <div class="sch-header"></div>
+          <div class="sch-header">Lunes</div>
+          <div class="sch-header">Martes</div>
+          <div class="sch-header">Miércoles</div>
+          <div class="sch-header">Jueves</div>
+          <div class="sch-header">Viernes</div>
+          <!-- 7am -->
+          <div class="sch-time">7:00</div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event blue" style="height:100%">Cálculo Diferencial<br><span style="font-weight:400;font-size:.62rem">Aula A-101</span></div>
+          </div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event blue" style="height:100%">Cálculo Diferencial<br><span style="font-weight:400;font-size:.62rem">Aula A-101</span></div>
+          </div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell"></div>
+          <!-- 9am -->
+          <div class="sch-time">9:00</div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event teal" style="height:100%">Programación II<br><span style="font-weight:400;font-size:.62rem">Lab-3</span></div>
+          </div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event teal" style="height:100%">Programación II<br><span style="font-weight:400;font-size:.62rem">Lab-3</span></div>
+          </div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event amber" style="height:100%">Inglés Técnico<br><span style="font-weight:400;font-size:.62rem">B-205</span></div>
+          </div>
+          <!-- 11am -->
+          <div class="sch-time">11:00</div>
+          <div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div>
+          <!-- 13pm -->
+          <div class="sch-time">13:00</div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell"></div>
+          <div class="sch-cell" style="position:relative;height:72px">
+            <div class="sch-event green" style="height:100%">Estadística Básica<br><span style="font-weight:400;font-size:.62rem">A-202</span></div>
+          </div>
+          <!-- 15pm -->
+          <div class="sch-time">15:00</div>
+          <div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div><div class="sch-cell"></div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-3">
+        <div class="flex gap-2 items-center text-sm"><div style="width:12px;height:12px;background:var(--blue-pale);border-left:3px solid var(--blue);border-radius:2px"></div><span class="text-muted">Cálculo Diferencial</span></div>
+        <div class="flex gap-2 items-center text-sm"><div style="width:12px;height:12px;background:var(--teal-light);border-left:3px solid var(--teal);border-radius:2px"></div><span class="text-muted">Programación II</span></div>
+        <div class="flex gap-2 items-center text-sm"><div style="width:12px;height:12px;background:var(--amber-light);border-left:3px solid var(--amber);border-radius:2px"></div><span class="text-muted">Inglés Técnico</span></div>
+        <div class="flex gap-2 items-center text-sm"><div style="width:12px;height:12px;background:var(--green-light);border-left:3px solid var(--green);border-radius:2px"></div><span class="text-muted">Estadística Básica</span></div>
+      </div>
+    </div>
+
+    <!-- PAGE: PAGO / FACTURAS -->
+    <div class="page-content" id="page-pago" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Pagos y facturas</h1><p>Historial de transacciones y documentos fiscales</p></div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary">📥 Exportar</button>
+          <button class="btn btn-primary" onclick="navTo('matricula')">+ Nuevo pago</button>
+        </div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+        <div class="kpi-card"><div class="kpi-icon blue">💰</div><div><div class="kpi-label">Total pagado 2025</div><div class="kpi-value">₡340k</div><div class="kpi-change up">3 transacciones</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon green">✅</div><div><div class="kpi-label">Facturas emitidas</div><div class="kpi-value">3</div><div class="kpi-change">Todas disponibles</div></div></div>
+        <div class="kpi-card"><div class="kpi-icon amber">⏳</div><div><div class="kpi-label">Saldo pendiente</div><div class="kpi-value">₡0</div><div class="kpi-change up">Al día ✓</div></div></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--gray-200)">
+          <div class="card-title">Historial de transacciones</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factura</th><th>Descripción</th><th>Método</th><th>Monto</th><th>Descuento</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr><td><span class="font-mono text-xs">FAC-2025-001</span></td><td>Matrícula I-2025 · 4 cursos</td><td>Tarjeta Visa</td><td>₡140,000</td><td>₡20,000</td><td style="font-weight:600">₡120,000</td><td class="text-xs text-muted">15 ene 2025</td><td><span class="badge badge-green">Pagado</span></td><td><button class="btn btn-ghost btn-sm">📄 PDF</button></td></tr>
+              <tr><td><span class="font-mono text-xs">FAC-2024-018</span></td><td>Matrícula IV-2024 · 5 cursos</td><td>SINPE Móvil</td><td>₡165,000</td><td>₡0</td><td style="font-weight:600">₡165,000</td><td class="text-xs text-muted">5 sep 2024</td><td><span class="badge badge-green">Pagado</span></td><td><button class="btn btn-ghost btn-sm">📄 PDF</button></td></tr>
+              <tr><td><span class="font-mono text-xs">FAC-2024-009</span></td><td>Matrícula III-2024 · 4 cursos</td><td>Tarjeta Visa</td><td>₡140,000</td><td>₡7,000</td><td style="font-weight:600">₡133,000</td><td class="text-xs text-muted">12 may 2024</td><td><span class="badge badge-green">Pagado</span></td><td><button class="btn btn-ghost btn-sm">📄 PDF</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: CONFIRMACIÓN -->
+    <div class="page-content" id="page-confirmacion" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+        <div class="confirm-card">
+          <div class="confirm-icon">✅</div>
+          <div class="confirm-title">¡Matrícula confirmada!</div>
+          <div class="confirm-sub">Tu inscripción fue procesada exitosamente. Recibirás un comprobante por correo electrónico.</div>
+          <div class="confirm-receipt">
+            <div class="receipt-row"><span class="receipt-label">Número de comprobante</span><span class="receipt-val receipt-code">MAT-2025-008471</span></div>
+            <div class="receipt-row"><span class="receipt-label">Período</span><span class="receipt-val">I Cuatrimestre 2025</span></div>
+            <div class="receipt-row"><span class="receipt-label">Cursos inscritos</span><span class="receipt-val" id="conf-cursos">—</span></div>
+            <div class="receipt-row"><span class="receipt-label">Créditos totales</span><span class="receipt-val" id="conf-cred">—</span></div>
+            <div class="receipt-row"><span class="receipt-label">Monto pagado</span><span class="receipt-val" id="conf-monto">—</span></div>
+            <div class="receipt-row"><span class="receipt-label">Método de pago</span><span class="receipt-val">Tarjeta Visa ····3421</span></div>
+            <div class="receipt-row"><span class="receipt-label">Fecha y hora</span><span class="receipt-val">15 ene 2025, 09:47 am</span></div>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-secondary w-full">📥 Descargar PDF</button>
+            <button class="btn btn-primary w-full" onclick="navTo('dash-estudiante')">🏠 Ir al inicio</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: GESTIÓN ACADÉMICA (Admin) -->
+    <div class="page-content" id="page-gestion-academica" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Gestión académica</h1><p>Administrar carreras, cursos, grupos y períodos</p></div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary" onclick="openModal('modal-grupo')">+ Nuevo grupo</button>
+          <button class="btn btn-primary" onclick="openModal('modal-curso')">+ Nuevo curso</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab-btn active" onclick="switchTab(this,'tab-cursos')">Cursos</div>
+        <div class="tab-btn" onclick="switchTab(this,'tab-grupos')">Grupos / Secciones</div>
+        <div class="tab-btn" onclick="switchTab(this,'tab-periodos')">Períodos</div>
+        <div class="tab-btn" onclick="switchTab(this,'tab-prereq')">Prerrequisitos</div>
+      </div>
+
+      <!-- Tab: Cursos -->
+      <div class="tab-panel active" id="tab-cursos">
+        <div class="filter-bar">
+          <input type="text" placeholder="🔍 Buscar curso…">
+          <select><option>Todas las carreras</option><option>Ing. Sistemas</option><option>Contabilidad</option></select>
+          <select><option>Todos los estados</option><option>Activo</option><option>Inactivo</option></select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Código</th><th>Nombre del curso</th><th>Carrera</th><th>Créditos</th><th>Prerrequisito</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                <tr><td><span class="font-mono text-xs">MAT-201</span></td><td style="font-weight:500">Cálculo Diferencial</td><td class="text-muted text-sm">Ing. Sistemas</td><td>4</td><td><span class="badge badge-amber">MAT-100</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td><span class="font-mono text-xs">PRG-202</span></td><td style="font-weight:500">Programación II</td><td class="text-muted text-sm">Ing. Sistemas</td><td>4</td><td><span class="badge badge-amber">PRG-100</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td><span class="font-mono text-xs">ING-101</span></td><td style="font-weight:500">Inglés Técnico I</td><td class="text-muted text-sm">General</td><td>4</td><td><span class="text-muted text-xs">Sin prerrequisito</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td><span class="font-mono text-xs">ADM-305</span></td><td style="font-weight:500">Gestión de Proyectos</td><td class="text-muted text-sm">Administración</td><td>3</td><td><span class="badge badge-amber">ADM-200</span></td><td><span class="badge badge-gray">Inactivo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td><span class="font-mono text-xs">EST-101</span></td><td style="font-weight:500">Estadística Básica</td><td class="text-muted text-sm">General</td><td>4</td><td><span class="text-muted text-xs">Sin prerrequisito</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Grupos -->
+      <div class="tab-panel" id="tab-grupos">
+        <div class="filter-bar">
+          <select><option>I-2025</option><option>II-2025</option></select>
+          <select><option>Todos los cursos</option><option>Cálculo Diferencial</option><option>Programación II</option></select>
+          <input type="text" placeholder="🔍 Buscar grupo…">
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Grupo</th><th>Curso</th><th>Aula</th><th>Horario</th><th>Docente</th><th>Cupos</th><th>Período</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600">G-01</td><td>Cálculo Diferencial</td><td class="font-mono text-xs">A-101</td><td class="text-xs text-muted">Lun/Mié 7-9am</td><td class="text-sm">Dr. Ramírez</td><td><span class="badge badge-amber">28/30</span></td><td><span class="badge badge-blue">I-2025</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+                <tr><td style="font-weight:600">G-01</td><td>Programación II</td><td class="font-mono text-xs">Lab-3</td><td class="text-xs text-muted">Mar/Jue 9-11am</td><td class="text-sm">MSc. López</td><td><span class="badge badge-red">30/30</span></td><td><span class="badge badge-blue">I-2025</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+                <tr><td style="font-weight:600">G-02</td><td>Programación II</td><td class="font-mono text-xs">B-205</td><td class="text-xs text-muted">Mar/Jue 13-15pm</td><td class="text-sm">MSc. López</td><td><span class="badge badge-green">12/30</span></td><td><span class="badge badge-blue">I-2025</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+                <tr><td style="font-weight:600">G-01</td><td>Inglés Técnico</td><td class="font-mono text-xs">B-205</td><td class="text-xs text-muted">Vie 9-11am</td><td class="text-sm">Lic. Castro</td><td><span class="badge badge-green">18/40</span></td><td><span class="badge badge-blue">I-2025</span></td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Períodos -->
+      <div class="tab-panel" id="tab-periodos">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Período</th><th>Descripción</th><th>Inicio</th><th>Fin</th><th>Matrícula desde</th><th>Matrícula hasta</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:700" class="font-mono">I-2025</td><td>I Cuatrimestre 2025</td><td>15 ene 2025</td><td>30 abr 2025</td><td>5 ene 2025</td><td>20 ene 2025</td><td><span class="badge badge-green">Activo</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+                <tr><td style="font-weight:700" class="font-mono">IV-2024</td><td>IV Cuatrimestre 2024</td><td>2 sep 2024</td><td>20 dic 2024</td><td>20 ago 2024</td><td>5 sep 2024</td><td><span class="badge badge-gray">Cerrado</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+                <tr><td style="font-weight:700" class="font-mono">III-2024</td><td>III Cuatrimestre 2024</td><td>6 may 2024</td><td>23 ago 2024</td><td>22 abr 2024</td><td>8 may 2024</td><td><span class="badge badge-gray">Cerrado</span></td><td><button class="btn btn-ghost btn-sm">✏️</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Prerrequisitos -->
+      <div class="tab-panel" id="tab-prereq">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Curso</th><th>Tipo</th><th>Requiere</th><th>Acciones</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500">Cálculo Diferencial <span class="font-mono text-xs text-muted">MAT-201</span></td><td><span class="badge badge-amber">Prerrequisito</span></td><td>Precálculo <span class="font-mono text-xs text-muted">MAT-100</span></td><td><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td style="font-weight:500">Programación II <span class="font-mono text-xs text-muted">PRG-202</span></td><td><span class="badge badge-amber">Prerrequisito</span></td><td>Programación I <span class="font-mono text-xs text-muted">PRG-100</span></td><td><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+                <tr><td style="font-weight:500">Álgebra Lineal <span class="font-mono text-xs text-muted">MAT-202</span></td><td><span class="badge badge-blue">Correquisito</span></td><td>Cálculo Diferencial <span class="font-mono text-xs text-muted">MAT-201</span></td><td><button class="btn btn-ghost btn-sm">🗑️</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <button class="btn btn-primary mt-3" onclick="openModal('modal-curso')">+ Agregar relación</button>
+      </div>
+    </div>
+
+    <!-- PAGE: REPORTES -->
+    <div class="page-content" id="page-reportes" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Reportes y estadísticas</h1><p>RF-20, RF-21, RF-22 · Exportación en PDF, Excel y CSV</p></div>
+      </div>
+      <div class="report-grid">
+        <div class="report-card"><div class="report-icon">📊</div><div><div class="report-name">Matrícula por período</div><div class="report-desc">Inscritos, cancelados y lista de espera</div></div></div>
+        <div class="report-card"><div class="report-icon">💰</div><div><div class="report-name">Ingresos financieros</div><div class="report-desc">Pagos, facturas y saldos pendientes</div></div></div>
+        <div class="report-card"><div class="report-icon">👥</div><div><div class="report-name">Estudiantes activos</div><div class="report-desc">Por carrera, período y estado</div></div></div>
+        <div class="report-card"><div class="report-icon">📚</div><div><div class="report-name">Ocupación de grupos</div><div class="report-desc">Cupos utilizados vs disponibles</div></div></div>
+        <div class="report-card"><div class="report-icon">🏛️</div><div><div class="report-name">Uso de aulas</div><div class="report-desc">Ocupación por espacio y período</div></div></div>
+        <div class="report-card"><div class="report-icon">🔔</div><div><div class="report-name">Notificaciones enviadas</div><div class="report-desc">Estado de envío por canal</div></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Matrículas por mes — 2025</div>
+          <div class="card-sub">Total de estudiantes matriculados</div>
+          <div class="chart-bars">
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:60%"><div class="chart-bar-val">312</div></div><div class="chart-bar-label">Ene</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:85%"><div class="chart-bar-val">441</div></div><div class="chart-bar-label">Feb</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:45%"><div class="chart-bar-val">233</div></div><div class="chart-bar-label">Mar</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:30%"><div class="chart-bar-val">155</div></div><div class="chart-bar-label">Abr</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"><div class="chart-bar-val" style="color:var(--gray-300)">—</div></div><div class="chart-bar-label">May</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Distribución de ingresos</div>
+          <div class="card-sub">I Cuatrimestre 2025</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="text-muted">Ing. Sistemas</span><span style="font-weight:600">₡8.4M</span></div>
+              <div class="prog-bar"><div class="prog-fill blue" style="width:65%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="text-muted">Contabilidad</span><span style="font-weight:600">₡5.2M</span></div>
+              <div class="prog-bar"><div class="prog-fill teal" style="width:40%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="text-muted">Administración</span><span style="font-weight:600">₡4.1M</span></div>
+              <div class="prog-bar"><div class="prog-fill amber" style="width:32%"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span class="text-muted">Derecho</span><span style="font-weight:600">₡3.8M</span></div>
+              <div class="prog-bar"><div class="prog-fill" style="width:29%;background:var(--red)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: AUDITORÍA -->
+    <div class="page-content" id="page-auditoria" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Bitácora de auditoría</h1><p>RF-03 · Registro de todas las acciones críticas del sistema</p></div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary">📥 Exportar CSV</button>
+        </div>
+      </div>
+      <div class="alert alert-info">🔒 Esta sección es de solo lectura. Los registros de auditoría no pueden ser modificados ni eliminados.</div>
+      <div class="filter-bar">
+        <input type="text" placeholder="🔍 Buscar por usuario, tabla o acción…">
+        <select><option>Todos los tipos</option><option>INSERT</option><option>UPDATE</option><option>DELETE</option></select>
+        <select><option>Todas las tablas</option><option>Matricula</option><option>Pagos</option><option>Persona</option></select>
+        <input type="date">
+        <input type="date">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Fecha / hora</th><th>Usuario</th><th>Acción</th><th>Tabla</th><th>Registro</th><th>IP origen</th><th>Detalle</th></tr></thead>
+            <tbody>
+              <tr><td class="font-mono text-xs">8471</td><td class="text-xs text-muted">15/01/2025 09:47:23</td><td class="text-sm">mrodriguez</td><td><span class="badge badge-green">INSERT</span></td><td class="font-mono text-xs">Matricula</td><td class="font-mono text-xs">#1047</td><td class="text-xs text-muted">10.0.1.24</td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+              <tr><td class="font-mono text-xs">8470</td><td class="text-xs text-muted">15/01/2025 09:47:21</td><td class="text-sm">mrodriguez</td><td><span class="badge badge-blue">INSERT</span></td><td class="font-mono text-xs">Pagos</td><td class="font-mono text-xs">#2034</td><td class="text-xs text-muted">10.0.1.24</td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+              <tr><td class="font-mono text-xs">8469</td><td class="text-xs text-muted">15/01/2025 08:15:00</td><td class="text-sm">admin.registro</td><td><span class="badge badge-amber">UPDATE</span></td><td class="font-mono text-xs">Grupos</td><td class="font-mono text-xs">#45</td><td class="text-xs text-muted">10.0.0.5</td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+              <tr><td class="font-mono text-xs">8468</td><td class="text-xs text-muted">14/01/2025 17:30:12</td><td class="text-sm">tesoreria01</td><td><span class="badge badge-blue">INSERT</span></td><td class="font-mono text-xs">Factura</td><td class="font-mono text-xs">#891</td><td class="text-xs text-muted">10.0.2.11</td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+              <tr><td class="font-mono text-xs">8467</td><td class="text-xs text-muted">14/01/2025 14:02:55</td><td class="text-sm">admin.ti</td><td><span class="badge badge-red">DELETE</span></td><td class="font-mono text-xs">ListaEspera</td><td class="font-mono text-xs">#112</td><td class="text-xs text-muted">10.0.0.1</td><td><button class="btn btn-ghost btn-sm">Ver</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+          <span class="text-sm text-muted">Mostrando 1-5 de 8,471 registros</span>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary btn-sm">← Anterior</button>
+            <button class="btn btn-secondary btn-sm">Siguiente →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: NOTIFICACIONES -->
+    <div class="page-content" id="page-notificaciones" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Notificaciones</h1><p>RF-23, RF-24 · Historial de mensajes enviados</p></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Centro de notificaciones</div>
+          <div class="card-sub">Mensajes del sistema</div>
+          <div class="notif-item">
+            <div class="notif-dot-type" style="background:var(--green)"></div>
+            <div>
+              <div class="notif-msg"><strong>Matrícula confirmada</strong> — Tu inscripción para el I-2025 fue procesada exitosamente.</div>
+              <div class="notif-time">Hoy, 9:47 am · Email enviado ✓</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot-type" style="background:var(--blue)"></div>
+            <div>
+              <div class="notif-msg"><strong>Pago recibido</strong> — Se registró un pago de ₡120,000 por concepto de matrícula.</div>
+              <div class="notif-time">Hoy, 9:45 am · Email enviado ✓</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot-type" style="background:var(--amber)"></div>
+            <div>
+              <div class="notif-msg"><strong>Período de matrícula abierto</strong> — El período I-2025 ya está disponible para inscripción.</div>
+              <div class="notif-time">Ayer, 8:00 am · Email enviado ✓</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot-type" style="background:var(--red)"></div>
+            <div>
+              <div class="notif-msg"><strong>Recordatorio de pago</strong> — Tenés 3 días para completar el pago de tu matrícula.</div>
+              <div class="notif-time">Hace 3 días · Email + SMS</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Estado de envíos</div>
+          <div class="card-sub">Resumen de notificaciones del período</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 items-center"><span style="color:var(--green)">●</span><span class="text-sm">Enviadas exitosamente</span></div>
+              <span style="font-weight:700;font-family:var(--font-display)">1,247</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 items-center"><span style="color:var(--amber)">●</span><span class="text-sm">Pendientes de envío</span></div>
+              <span style="font-weight:700;font-family:var(--font-display)">34</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <div class="flex gap-2 items-center"><span style="color:var(--red)">●</span><span class="text-sm">Fallidas</span></div>
+              <span style="font-weight:700;font-family:var(--font-display)">8</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-200)">
+            <div class="card-title" style="margin-bottom:10px">Canales utilizados</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div><div class="flex justify-between text-sm mb-1"><span class="text-muted">Email</span><span style="font-weight:600">78%</span></div><div class="prog-bar"><div class="prog-fill blue" style="width:78%"></div></div></div>
+              <div><div class="flex justify-between text-sm mb-1"><span class="text-muted">SMS</span><span style="font-weight:600">15%</span></div><div class="prog-bar"><div class="prog-fill teal" style="width:15%"></div></div></div>
+              <div><div class="flex justify-between text-sm mb-1"><span class="text-muted">Push</span><span style="font-weight:600">7%</span></div><div class="prog-bar"><div class="prog-fill amber" style="width:7%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: LISTA ESPERA -->
+    <div class="page-content" id="page-lista-espera" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Lista de espera</h1><p>Grupos con cupo lleno · Gestión de inscripciones pendientes</p></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pos.</th><th>Estudiante</th><th>Curso / Grupo</th><th>Período</th><th>Fecha registro</th><th>Estado cupo</th><th>Acciones</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:700">1°</td><td><div style="font-weight:500">Carlos Méndez</div><div class="text-xs text-muted">1-2001-0045</div></td><td><div>Física General I</div><div class="font-mono text-xs text-muted">FIS-101 · G-01</div></td><td><span class="badge badge-blue">I-2025</span></td><td class="text-xs text-muted">14 ene 2025</td><td><span class="badge badge-red">30/30 Lleno</span></td><td><button class="btn btn-teal btn-sm">✓ Inscribir</button><button class="btn btn-ghost btn-sm">✕</button></td></tr>
+              <tr><td style="font-weight:700">2°</td><td><div style="font-weight:500">Ana Vargas</div><div class="text-xs text-muted">1-2003-0812</div></td><td><div>Física General I</div><div class="font-mono text-xs text-muted">FIS-101 · G-01</div></td><td><span class="badge badge-blue">I-2025</span></td><td class="text-xs text-muted">14 ene 2025</td><td><span class="badge badge-red">30/30 Lleno</span></td><td><button class="btn btn-teal btn-sm">✓ Inscribir</button><button class="btn btn-ghost btn-sm">✕</button></td></tr>
+              <tr><td style="font-weight:700">1°</td><td><div style="font-weight:500">Luis Fernández</div><div class="text-xs text-muted">1-1999-1120</div></td><td><div>Programación II</div><div class="font-mono text-xs text-muted">PRG-202 · G-01</div></td><td><span class="badge badge-blue">I-2025</span></td><td class="text-xs text-muted">15 ene 2025</td><td><span class="badge badge-red">30/30 Lleno</span></td><td><button class="btn btn-teal btn-sm">✓ Inscribir</button><button class="btn btn-ghost btn-sm">✕</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-area -->
+</div><!-- /screen-dash -->
+
+
+<!-- ============================================================
+     SCRIPT
+============================================================ -->
+<script src="script.js"></script>
+</body>
+</html>

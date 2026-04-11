@@ -1,0 +1,362 @@
+// ============================================================
+// Prisma Schema — SisMatrícula
+// Provider: PostgreSQL (Supabase)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── CATÁLOGOS ─────────────────────────────────────────────
+
+model Rol {
+  id_rol      Int       @id @default(autoincrement())
+  descripcion String    @db.VarChar(100)
+  activo      Boolean   @default(true)
+  personas    Persona[]
+
+  @@map("roles")
+}
+
+model Provincia {
+  id_provincia Int       @id @default(autoincrement())
+  descripcion  String    @db.VarChar(100)
+  activo       Boolean   @default(true)
+  cantones     Canton[]
+  personas     Persona[]
+
+  @@map("provincia")
+}
+
+model Canton {
+  id_canton    Int       @id @default(autoincrement())
+  id_provincia Int
+  descripcion  String    @db.VarChar(100)
+  activo       Boolean   @default(true)
+  provincia    Provincia @relation(fields: [id_provincia], references: [id_provincia])
+  distritos    Distrito[]
+  personas     Persona[]
+
+  @@map("canton")
+}
+
+model Distrito {
+  id_distrito Int    @id @default(autoincrement())
+  id_canton   Int
+  descripcion String @db.VarChar(100)
+  activo      Boolean @default(true)
+  canton      Canton @relation(fields: [id_canton], references: [id_canton])
+
+  @@map("distrito")
+}
+
+model TipoAuditoria {
+  id_tipo_auditoria Int                @id @default(autoincrement())
+  descripcion       String             @db.VarChar(100)
+  activo            Boolean            @default(true)
+  bitacoras         BitacoraAuditoria[]
+
+  @@map("tipo_auditoria")
+}
+
+model TipoDescuento {
+  id_tipo_descuento Int               @id @default(autoincrement())
+  descripcion       String            @db.VarChar(100)
+  porcentaje        Decimal           @default(0.00) @db.Decimal(5, 2)
+  activo            Boolean           @default(true)
+  persona_descuentos PersonaDescuento[]
+
+  @@map("tipo_descuento")
+}
+
+model TipoNotificacion {
+  id_tipo_notificacion Int              @id @default(autoincrement())
+  descripcion          String           @db.VarChar(100)
+  activo               Boolean          @default(true)
+  notificaciones       Notificacion[]
+
+  @@map("tipo_notificacion")
+}
+
+model MetodoPago {
+  id_metodo_pago Int     @id @default(autoincrement())
+  descripcion    String  @db.VarChar(100)
+  activo         Boolean @default(true)
+  pagos          Pago[]
+
+  @@map("metodos_pago")
+}
+
+model Periodo {
+  id_periodo   Int       @id @default(autoincrement())
+  descripcion  String    @db.VarChar(100)
+  activo       Boolean   @default(true)
+  fecha_inicio DateTime  @db.Date
+  fecha_fin    DateTime  @db.Date
+  grupos       Grupo[]
+  matriculas   Matricula[]
+
+  @@map("periodos")
+}
+
+model Carrera {
+  id_carrera  Int      @id @default(autoincrement())
+  descripcion String   @db.VarChar(100)
+  activo      Boolean  @default(true)
+  cursos      Curso[]
+  grupos      Grupo[]
+
+  @@map("carreras")
+}
+
+model Aula {
+  id_aula   Int     @id @default(autoincrement())
+  nombre    String  @db.VarChar(50)
+  capacidad Int     @default(0)
+  ubicacion String? @db.VarChar(150)
+  activo    Boolean @default(true)
+  grupos    Grupo[]
+
+  @@map("aula")
+}
+
+// ─── PERSONA ───────────────────────────────────────────────
+
+model Persona {
+  cedula           String   @id @db.VarChar(20)
+  nombre           String   @db.VarChar(100)
+  apellidos        String   @db.VarChar(100)
+  fecha_nacimiento DateTime @db.Date
+  sexo             String   @db.Char(1)
+  email            String   @db.VarChar(150)
+  telefono         String?  @db.VarChar(20)
+  activo           Boolean  @default(true)
+  bloqueado        Boolean  @default(false)
+  moroso           Boolean  @default(false)
+  id_provincia     Int
+  id_canton        Int
+  id_rol           Int
+
+  provincia          Provincia          @relation(fields: [id_provincia], references: [id_provincia])
+  canton             Canton             @relation(fields: [id_canton], references: [id_canton])
+  rol                Rol                @relation(fields: [id_rol], references: [id_rol])
+  matriculas         Matricula[]
+  pagos              Pago[]
+  facturas           Factura[]
+  lista_espera       ListaEspera[]
+  notificaciones     Notificacion[]
+  persona_descuentos PersonaDescuento[]
+  bitacoras          BitacoraAuditoria[]
+
+  @@map("persona")
+}
+
+// ─── CURSOS ────────────────────────────────────────────────
+
+model Curso {
+  id_curso    Int     @id @default(autoincrement())
+  descripcion String  @db.VarChar(150)
+  activo      Boolean @default(true)
+  id_carrera  Int
+  creditos    Int     @default(0)
+
+  carrera       Carrera        @relation(fields: [id_carrera], references: [id_carrera])
+  grupos        Grupo[]
+  pre_requisitos PreRequisito[] @relation("CursoBase")
+  es_requisito_de PreRequisito[] @relation("CursoRequisito")
+  correquisitos  Correquisito[] @relation("CursoBase")
+  es_coreq_de    Correquisito[] @relation("CursoCorequisto")
+
+  @@map("cursos")
+}
+
+model PreRequisito {
+  id_prerequisito Int @id @default(autoincrement())
+  id_curso        Int
+  id_curso_req    Int
+
+  curso     Curso @relation("CursoBase",      fields: [id_curso],     references: [id_curso])
+  requisito Curso @relation("CursoRequisito", fields: [id_curso_req], references: [id_curso])
+
+  @@map("pre_requisitos")
+}
+
+model Correquisito {
+  id_correquisito Int @id @default(autoincrement())
+  id_curso        Int
+  id_curso_coreq  Int
+
+  curso      Curso @relation("CursoBase",       fields: [id_curso],       references: [id_curso])
+  correquisito Curso @relation("CursoCorequisto", fields: [id_curso_coreq], references: [id_curso])
+
+  @@map("correquisitos")
+}
+
+// ─── GRUPOS Y HORARIOS ─────────────────────────────────────
+
+model Grupo {
+  id_grupo    Int     @id @default(autoincrement())
+  descripcion String  @db.VarChar(100)
+  activo      Boolean @default(true)
+  id_curso    Int
+  id_carrera  Int
+  id_periodo  Int
+  id_aula     Int
+  cupo_maximo Int     @default(30)
+  cupo_actual Int     @default(0)
+
+  curso      Curso     @relation(fields: [id_curso],   references: [id_curso])
+  carrera    Carrera   @relation(fields: [id_carrera], references: [id_carrera])
+  periodo    Periodo   @relation(fields: [id_periodo], references: [id_periodo])
+  aula       Aula      @relation(fields: [id_aula],    references: [id_aula])
+  horarios   Horario[]
+  matriculas Matricula[]
+  lista_espera ListaEspera[]
+
+  @@map("grupos")
+}
+
+model Horario {
+  id_horario  Int      @id @default(autoincrement())
+  id_grupo    Int
+  dia_semana  Int      @db.SmallInt   // 1=Lunes … 7=Domingo
+  hora_inicio DateTime @db.Time()
+  hora_fin    DateTime @db.Time()
+
+  grupo Grupo @relation(fields: [id_grupo], references: [id_grupo])
+
+  @@map("horarios")
+}
+
+// ─── MATRÍCULA ─────────────────────────────────────────────
+
+model Matricula {
+  id_matricula       Int       @id @default(autoincrement())
+  cedula_persona     String    @db.VarChar(20)
+  id_grupo           Int
+  id_periodo         Int
+  estado             String    @default("pendiente") @db.VarChar(20)
+  fecha_matricula    DateTime  @default(now()) @db.Timestamptz()
+  fecha_confirmacion DateTime? @db.Timestamptz()
+  observaciones      String?   @db.VarChar(500)
+
+  persona  Persona  @relation(fields: [cedula_persona], references: [cedula])
+  grupo    Grupo    @relation(fields: [id_grupo],       references: [id_grupo])
+  periodo  Periodo  @relation(fields: [id_periodo],     references: [id_periodo])
+  pagos    Pago[]
+  facturas Factura[]
+
+  @@unique([cedula_persona, id_grupo])
+  @@map("matricula")
+}
+
+model ListaEspera {
+  id_espera      Int      @id @default(autoincrement())
+  cedula_persona String   @db.VarChar(20)
+  id_grupo       Int
+  fecha_registro DateTime @default(now()) @db.Timestamptz()
+
+  persona Persona @relation(fields: [cedula_persona], references: [cedula])
+  grupo   Grupo   @relation(fields: [id_grupo],       references: [id_grupo])
+
+  @@map("lista_espera")
+}
+
+// ─── PAGOS Y FACTURACIÓN ───────────────────────────────────
+
+model Pago {
+  id_pago            Int      @id @default(autoincrement())
+  id_metodo_pago     Int
+  cedula_persona     String   @db.VarChar(20)
+  id_matricula       Int?
+  monto              Decimal  @db.Decimal(10, 2)
+  saldo              Decimal  @default(0.00) @db.Decimal(10, 2)
+  estado             String   @default("pendiente") @db.VarChar(20)
+  referencia_externa String?  @db.VarChar(100)
+  fecha_pago         DateTime @default(now()) @db.Timestamptz()
+
+  metodo_pago MetodoPago @relation(fields: [id_metodo_pago], references: [id_metodo_pago])
+  persona     Persona    @relation(fields: [cedula_persona],  references: [cedula])
+  matricula   Matricula? @relation(fields: [id_matricula],    references: [id_matricula])
+  facturas    Factura[]
+
+  @@map("pagos")
+}
+
+model Factura {
+  id_factura     Int      @id @default(autoincrement())
+  id_pago        Int
+  cedula_persona String   @db.VarChar(20)
+  id_matricula   Int
+  monto_total    Decimal  @db.Decimal(10, 2)
+  descuento      Decimal  @default(0.00) @db.Decimal(10, 2)
+  monto_neto     Decimal  @db.Decimal(10, 2)
+  fecha_emision  DateTime @default(now()) @db.Timestamptz()
+  descripcion    String?  @db.VarChar(500)
+
+  pago      Pago      @relation(fields: [id_pago],        references: [id_pago])
+  persona   Persona   @relation(fields: [cedula_persona],  references: [cedula])
+  matricula Matricula @relation(fields: [id_matricula],    references: [id_matricula])
+
+  @@map("factura")
+}
+
+// ─── DESCUENTOS ────────────────────────────────────────────
+
+model PersonaDescuento {
+  id_persona_descuento Int      @id @default(autoincrement())
+  cedula_persona       String   @db.VarChar(20)
+  id_tipo_descuento    Int
+  fecha_inicio         DateTime @db.Date
+  fecha_fin            DateTime? @db.Date
+  activo               Boolean  @default(true)
+
+  persona       Persona       @relation(fields: [cedula_persona],    references: [cedula])
+  tipo_descuento TipoDescuento @relation(fields: [id_tipo_descuento], references: [id_tipo_descuento])
+
+  @@map("persona_descuento")
+}
+
+// ─── NOTIFICACIONES ────────────────────────────────────────
+
+model Notificacion {
+  id_notificacion      Int      @id @default(autoincrement())
+  id_tipo_notificacion Int
+  cedula_persona       String   @db.VarChar(20)
+  asunto               String   @db.VarChar(200)
+  mensaje              String
+  canal                String   @default("email") @db.VarChar(20)
+  estado_envio         String   @default("pendiente") @db.VarChar(20)
+  fecha_envio          DateTime? @db.Timestamptz()
+  fecha_creacion       DateTime @default(now()) @db.Timestamptz()
+
+  tipo_notificacion TipoNotificacion @relation(fields: [id_tipo_notificacion], references: [id_tipo_notificacion])
+  persona           Persona          @relation(fields: [cedula_persona],        references: [cedula])
+
+  @@map("notificaciones")
+}
+
+// ─── BITÁCORA ──────────────────────────────────────────────
+
+model BitacoraAuditoria {
+  id_bitacora       BigInt   @id @default(autoincrement())
+  id_tipo_auditoria Int
+  cedula_usuario    String   @db.VarChar(20)
+  tabla_afectada    String   @db.VarChar(100)
+  id_registro       String   @db.VarChar(50)
+  accion            String   @db.VarChar(20)
+  descripcion       String?
+  ip_origen         String?  @db.VarChar(45)
+  fecha_accion      DateTime @default(now()) @db.Timestamptz()
+
+  tipo_auditoria TipoAuditoria @relation(fields: [id_tipo_auditoria], references: [id_tipo_auditoria])
+  usuario        Persona       @relation(fields: [cedula_usuario],     references: [cedula])
+
+  @@map("bitacora_auditoria")
+}
