@@ -1,0 +1,94 @@
+import NextAuth, { type DefaultSession } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
+
+    // ─── Extensión de tipos NextAuth ──────────────────────────────────────────────
+    declare module "next-auth" {
+    interface Session {
+        user: {
+        cedula: string;
+        role: number;
+        } & DefaultSession["user"];
+    }
+    interface User {
+        cedula: string;
+        role: number;
+    }
+    }
+
+    declare module "next-auth/jwt" {
+    interface JWT {
+        cedula: string;
+        role: number;
+    }
+    }
+
+    // ─── Config NextAuth ──────────────────────────────────────────────────────────
+    export const { handlers, auth, signIn, signOut } = NextAuth({
+    providers: [
+        Credentials({
+        credentials: {
+            cedula: { label: "Cédula", type: "text" },
+            password: { label: "Contraseña", type: "password" },
+        },
+        async authorize(credentials) {
+            if (!credentials?.cedula || !credentials?.password) return null;
+
+            const persona = await db.persona.findUnique({
+            where: { cedula: credentials.cedula as string },
+            select: {
+                cedula: true,
+                nombre: true,
+                apellidos: true,
+                email: true,
+                id_rol: true,
+                password_hash: true,
+                activo: true,
+                bloqueado: true,
+            },
+            });
+
+            if (!persona || !persona.password_hash) return null;
+            if (!persona.activo || persona.bloqueado) return null;
+
+            const valid = await bcrypt.compare(
+            credentials.password as string,
+            persona.password_hash
+            );
+            if (!valid) return null;
+
+            return {
+            id: persona.cedula,
+            cedula: persona.cedula,
+            name: `${persona.nombre} ${persona.apellidos}`,
+            email: persona.email,
+            role: persona.id_rol,
+            };
+        },
+        }),
+    ],
+
+    callbacks: {
+        jwt({ token, user }) {
+        if (user) {
+            token.cedula = user.cedula;
+            token.role = user.role;
+        }
+        return token;
+        },
+        session({ session, token }) {
+        session.user.cedula = token.cedula;
+        session.user.role = token.role;
+        return session;
+        },
+    },
+
+    pages: {
+        signIn: "/login",
+    },
+
+    session: {
+        strategy: "jwt",
+    },
+    });
