@@ -1,0 +1,148 @@
+SRS – Sistema de Matrícula Universitaria
+1. Información General
+1.1 Propósito
+Este documento describe los requerimientos funcionales y no funcionales del Sistema de
+Matrícula Universitaria, cuyo objetivo es gestionar el proceso completo de inscripción
+académica, desde la oferta de cursos hasta la confirmación de matrícula y pagos.
+Servirá como base para:
+• Desarrollo del sistema
+• Contratación de proveedores
+• Pruebas y validación
+• Control de alcance
+1.2 Alcance del Sistema
+El sistema permitirá:
+• Gestionar estudiantes y su estado académico
+• Administrar planes de estudio y oferta académica
+• Realizar matrícula en línea por periodos académicos
+• Integrar pagos electrónicos
+• Generar reportes académicos y financieros
+• Integrarse con SSO institucional
+1.3 Definiciones
+Término Definición
+Periodo académico Semestre, cuatrimestre o trimestre donde se imparten cursos
+Matrícula Proceso de inscripción en cursos
+Sección Grupo específico de un curso
+SSO Single Sign-On institucional
+Estado de cuenta Documento con montos a pagar
+1.4 Actores del Sistema
+• Estudiante
+• Registro Académico
+• Tesorería
+• Docente
+• Administrador TI
+• Auditor institucional
+2. Descripción General del Sistema
+2.1 Perspectiva del Sistema
+El sistema será una plataforma web integrada con:
+• Sistema de identidad institucional (SSO)
+• Pasarela de pagos
+• Sistemas académicos/LMS (opcional)
+• Sistemas financieros institucionales
+2.2 Funciones Principales
+1. Gestión de usuarios y roles
+2. Administración académica
+3. Gestión de oferta de cursos
+4. Proceso de matrícula en línea
+5. Facturación y pagos
+6. Reportes y estadísticas
+7. Auditoría y seguridad
+2.3 Supuestos
+• La universidad usa SSO institucional
+• Existen políticas de matrícula definidas
+• Se utilizará pasarela de pago externa
+• La institución maneja periodos semestrales o trimestrales
+2.4 Restricciones
+• Cumplimiento de leyes de protección de datos
+• Integración obligatoria con sistema SSO
+• Disponibilidad en días de matrícula masiva
+3. Requerimientos Funcionales
+3.1 Autenticación y Seguridad
+RF-01: El sistema deberá permitir autenticación mediante SSO institucional.
+RF-02: El sistema deberá administrar roles y permisos.
+RF-03: El sistema deberá registrar bitácoras de auditoría.
+3.2 Gestión Académica
+RF-04: El sistema deberá gestionar carreras y planes de estudio.
+RF-05: El sistema deberá administrar el catálogo de cursos.
+RF-06: El sistema deberá gestionar periodos académicos.
+RF-07: El sistema deberá configurar prerrequisitos y correquisitos.
+3.3 Gestión de Oferta
+RF-08: El sistema deberá permitir crear secciones de cursos.
+RF-09: El sistema deberá administrar horarios y aulas.
+RF-10: El sistema deberá controlar cupos por sección.
+3.4 Proceso de Matrícula
+RF-11: El estudiante deberá visualizar la oferta académica.
+RF-12: El sistema deberá validar:
+• Cupos disponibles
+• Choques de horario
+• Prerrequisitos
+• Límites de créditos
+• Restricciones financieras
+RF-13: El sistema deberá confirmar matrícula con comprobante.
+RF-14: El sistema deberá permitir ajustes durante periodos autorizados.
+3.5 Pagos y Facturación
+RF-15: El sistema deberá calcular costos de matrícula.
+RF-16: El sistema deberá generar estados de cuenta.
+RF-17: El sistema deberá integrarse con pasarela de pago.
+RF-18: El sistema deberá bloquear matrícula por morosidad.
+RF-19: El sistema deberá registrar pagos y saldos.
+3.6 Reportes
+RF-20: El sistema deberá generar reportes de matrícula.
+RF-21: El sistema deberá generar reportes financieros.
+RF-22: El sistema deberá exportar información.
+3.7 Notificaciones
+RF-23: El sistema deberá enviar notificaciones de matrícula.
+RF-24: El sistema deberá enviar notificaciones de pagos.
+4. Requerimientos No Funcionales
+4.1 Seguridad
+• Cifrado de datos en tránsito y reposo
+• Control de acceso basado en roles
+• Registro de auditoría
+4.2 Rendimiento
+• Tiempo de respuesta menor a 5 segundos
+• Soporte para alta concurrencia en periodos de matrícula
+4.3 Disponibilidad
+• Disponibilidad mínima 99.5%
+• Soporte para operación continua
+4.4 Usabilidad
+• Interfaz web responsive
+• Accesibilidad estándar WCAG
+4.5 Mantenibilidad
+• Sistema modular
+• Registro de errores y monitoreo
+5. Reglas de Negocio
+• Existe límite de créditos por periodo
+• Se requiere pago para confirmar matrícula
+• Prerrequisitos deben cumplirse antes de inscripción
+• Matrícula se habilita en fechas definidas
+• Bloqueos por deuda académica o financiera
+6. Modelo Conceptual de Datos
+(Entidades)
+Principales entidades:
+• Estudiante
+• Usuario
+• Programa Académico
+• Curso
+• Sección
+• Periodo
+• Matrícula
+• Pago
+• Factura
+7. Matriz de Prioridad (MoSCoW)
+Must
+• SSO
+• Matrícula online
+• Validaciones académicas
+• Pagos electrónicos
+• Reportes básicos
+Should
+• Lista de espera
+• Notificaciones
+• Becas/descuentos
+Could
+• Integración LMS
+• Analítica avanzada
+8. Criterios de Aceptación Generales
+• Matrícula solo se confirma después de pago exitoso
+• Sistema bloquea inscripción con conflictos de horario
+• Auditoría registra toda modificación crítica
+• Reportes coinciden con registros de base de datos

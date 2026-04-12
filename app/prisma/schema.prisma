@@ -136,6 +136,7 @@ model Persona {
   sexo             String   @db.Char(1)
   email            String   @db.VarChar(150)
   telefono         String?  @db.VarChar(20)
+  password_hash    String?  @db.VarChar(255)
   activo           Boolean  @default(true)
   bloqueado        Boolean  @default(false)
   moroso           Boolean  @default(false)
