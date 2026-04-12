@@ -51,16 +51,21 @@
         const url    = editCarrera ? `/api/carreras/${editCarrera.id_carrera}` : "/api/carreras";
         const method = editCarrera ? "PUT" : "POST";
 
+        try {
         const res  = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ descripcion: formDesc }),
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ descripcion: formDesc }),
         });
         const json = await res.json();
-        setSaving(false);
         if (!json.ok) { setFormError(json.error); return; }
         setModalOpen(false);
         fetchCarreras();
+        } catch {
+        setFormError("Error de conexión. Intenta de nuevo.");
+        } finally {
+        setSaving(false);
+        }
     }
 
     async function handleToggle(c: Carrera) {

@@ -139,12 +139,17 @@ export default function GruposPage() {
     const url    = editGrupo ? `/api/grupos/${editGrupo.id_grupo}` : "/api/grupos";
     const method = editGrupo ? "PUT" : "POST";
 
-    const res  = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    const json = await res.json();
-    setSaving(false);
-    if (!json.ok) { setFormError(json.error); return; }
-    setModalOpen(false);
-    fetchGrupos();
+    try {
+      const res  = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!json.ok) { setFormError(json.error); return; }
+      setModalOpen(false);
+      fetchGrupos();
+    } catch {
+      setFormError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleToggle(g: Grupo) {

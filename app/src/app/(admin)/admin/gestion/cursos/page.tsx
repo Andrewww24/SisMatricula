@@ -88,14 +88,17 @@
         const url    = editCurso ? `/api/cursos/${editCurso.id_curso}` : "/api/cursos";
         const method = editCurso ? "PUT" : "POST";
 
+        try {
         const res  = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         const json = await res.json();
-
-        setSaving(false);
         if (!json.ok) { setFormError(json.error); return; }
-
         setModalOpen(false);
         fetchCursos();
+        } catch {
+        setFormError("Error de conexión. Intenta de nuevo.");
+        } finally {
+        setSaving(false);
+        }
     }
 
     async function handleToggle(c: Curso) {
