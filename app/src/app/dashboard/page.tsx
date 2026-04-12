@@ -48,7 +48,7 @@ import { signOut } from "@/lib/auth";
         {/* Contenido */}
         <div className="max-w-4xl mx-auto px-6 py-12">
             <h1 className="text-2xl font-bold text-slate-800 mb-2">
-            Bienvenido, {name?.split(" ")[0]} 👋
+            Bienvenid@, {name?.split(" ")[0]} 👋
             </h1>
             <p className="text-slate-500 mb-8">
             Cédula: <span className="font-mono font-medium text-slate-700">{cedula}</span>
