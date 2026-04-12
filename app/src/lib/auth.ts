@@ -75,8 +75,8 @@ import { db } from "@/lib/db";
         return token;
         },
         session({ session, token }) {
-        session.user.cedula = token.cedula;
-        session.user.role = token.role;
+        session.user.cedula = token.cedula as string;
+        session.user.role = token.role as number;
         return session;
         },
     },
