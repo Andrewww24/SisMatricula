@@ -237,12 +237,12 @@ async function main() {
   });
   console.log("✅ Horarios creados");
 
-  console.log("\n📋 Credenciales de prueba:");
+  console.log("\n Credenciales de prueba:");
   console.log("   Admin:      1-0000-0001 / Admin1234!");
   console.log("   Estudiante: 1-0000-0002 / Est1234!");
   console.log("   Tesorería:  1-0000-0003 / Tes1234!");
   console.log("   Docente:    1-0000-0004 / Doc1234!");
-  console.log("\n⚠️  Cambia las contraseñas en producción!");
+  console.log("\n  Cambia las contraseñas en producción!");
 }
 
 main()
