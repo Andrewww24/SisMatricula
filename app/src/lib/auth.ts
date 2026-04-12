@@ -88,4 +88,6 @@ import { db } from "@/lib/db";
     session: {
         strategy: "jwt",
     },
+
+    trustHost: true,
     });
