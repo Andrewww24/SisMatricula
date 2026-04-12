@@ -17,13 +17,6 @@ import { db } from "@/lib/db";
     }
     }
 
-    declare module "next-auth/jwt" {
-    interface JWT {
-        cedula: string;
-        role: number;
-    }
-    }
-
     // ─── Config NextAuth ──────────────────────────────────────────────────────────
     export const { handlers, auth, signIn, signOut } = NextAuth({
     providers: [
