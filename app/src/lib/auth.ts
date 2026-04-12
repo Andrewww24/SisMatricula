@@ -15,6 +15,10 @@ import { db } from "@/lib/db";
         cedula: string;
         role: number;
     }
+    interface JWT {
+        cedula: string;
+        role: number;
+    }
     }
 
     // ─── Config NextAuth ──────────────────────────────────────────────────────────
