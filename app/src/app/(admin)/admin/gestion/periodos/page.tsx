@@ -71,16 +71,21 @@ export default function PeriodosPage() {
     const url    = editPeriodo ? `/api/periodos/${editPeriodo.id_periodo}` : "/api/periodos";
     const method = editPeriodo ? "PUT" : "POST";
 
-    const res  = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ descripcion: formDesc, fecha_inicio: formInicio, fecha_fin: formFin }),
-    });
-    const json = await res.json();
-    setSaving(false);
-    if (!json.ok) { setFormError(json.error); return; }
-    setModalOpen(false);
-    fetchPeriodos();
+    try {
+      const res  = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ descripcion: formDesc, fecha_inicio: formInicio, fecha_fin: formFin }),
+      });
+      const json = await res.json();
+      if (!json.ok) { setFormError(json.error); return; }
+      setModalOpen(false);
+      fetchPeriodos();
+    } catch {
+      setFormError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleToggle(p: Periodo) {
