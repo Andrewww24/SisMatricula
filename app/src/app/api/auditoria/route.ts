@@ -25,5 +25,8 @@ export async function GET(req: NextRequest) {
     take: limite,
   });
 
-  return ok(registros);
+  // BigInt no es serializable por JSON.stringify — convertir a string
+  const data = registros.map((r) => ({ ...r, id_bitacora: String(r.id_bitacora) }));
+
+  return ok(data);
 }
