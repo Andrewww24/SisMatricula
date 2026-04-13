@@ -18,6 +18,21 @@ const db = new PrismaClient();
 async function main() {
   console.log("🌱 Iniciando seed...");
 
+  // ─── TipoNotificacion ────────────────────────────────────────────────────
+  const tiposNotificacion = [
+    { id_tipo_notificacion: 1, descripcion: "Matrícula" },
+    { id_tipo_notificacion: 2, descripcion: "Cancelación" },
+    { id_tipo_notificacion: 3, descripcion: "Pago" },
+  ];
+  for (const tipo of tiposNotificacion) {
+    await db.tipoNotificacion.upsert({
+      where:  { id_tipo_notificacion: tipo.id_tipo_notificacion },
+      update: {},
+      create: tipo,
+    });
+  }
+  console.log("✅ TipoNotificacion creados");
+
   // ─── TipoAuditoria ───────────────────────────────────────────────────────
   const tiposAuditoria = [
     { id_tipo_auditoria: 1, descripcion: "Login" },

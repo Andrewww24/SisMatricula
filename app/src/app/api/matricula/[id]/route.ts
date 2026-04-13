@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { ok, err, requireRoles, ROLES } from "@/lib/api-helpers";
 import { Prisma } from "@prisma/client";
 import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
+import { crearNotificacion, TIPO_NOTIFICACION } from "@/lib/notificacion";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -125,6 +126,14 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     id_registro:       id,
     accion:            "DELETE",
     descripcion:       `Cancelación de matrícula #${id}`,
+  });
+
+  // RF-23: Notificación de cancelación
+  await crearNotificacion({
+    id_tipo_notificacion: TIPO_NOTIFICACION.CANCELACION,
+    cedula_persona:       session!.user.cedula,
+    asunto:               "Matrícula cancelada",
+    mensaje:              `Tu matrícula #${id} fue cancelada correctamente.`,
   });
 
   return ok({ mensaje: "Matrícula cancelada correctamente." });
