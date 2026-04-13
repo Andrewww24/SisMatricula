@@ -2,6 +2,8 @@
     import { db } from "@/lib/db";
     import { ok, created, err, requireRoles, ROLES } from "@/lib/api-helpers";
     import { Prisma } from "@prisma/client";
+    import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
+    import { crearNotificacion, TIPO_NOTIFICACION } from "@/lib/notificacion";
 
     const MAX_CREDITOS = 18; // límite de créditos por período (RF-12)
 
@@ -188,6 +190,24 @@
             },
             },
         });
+        });
+
+        // RF-03: Auditoría de matrícula
+        await registrarAuditoria({
+          id_tipo_auditoria: TIPO_AUDITORIA.MATRICULA,
+          cedula_usuario:    cedula,
+          tabla_afectada:    "matricula",
+          id_registro:       String(matricula.id_matricula),
+          accion:            "CREATE",
+          descripcion:       `Inscripción en grupo ${id_grupo} — ${matricula.grupo.curso.descripcion}`,
+        });
+
+        // RF-23: Notificación de matrícula
+        await crearNotificacion({
+          id_tipo_notificacion: TIPO_NOTIFICACION.MATRICULA,
+          cedula_persona:       cedula,
+          asunto:               "Matrícula registrada",
+          mensaje:              `Te inscribiste en ${matricula.grupo.curso.descripcion} (${matricula.grupo.carrera.descripcion}). Estado: pendiente de pago.`,
         });
 
         return created(matricula);

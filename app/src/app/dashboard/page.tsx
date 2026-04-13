@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { signOut } from "@/lib/auth";
+import { db } from "@/lib/db";
 
     // Etiquetas de roles
     const ROLES: Record<number, { label: string; color: string }> = {
@@ -17,6 +18,10 @@ import { signOut } from "@/lib/auth";
     const { name, cedula, role } = session.user;
     const rolInfo = ROLES[role] ?? { label: "Desconocido", color: "bg-gray-100 text-gray-700" };
 
+    const noLeidas = await db.notificacion.count({
+      where: { cedula_persona: cedula, estado_envio: "pendiente" },
+    });
+
     return (
         <main className="min-h-screen bg-slate-50">
         {/* Navbar */}
@@ -25,6 +30,14 @@ import { signOut } from "@/lib/auth";
             🎓 Uni<span className="text-[#2563EB]">Matrícula</span>
             </div>
             <div className="flex items-center gap-4">
+            <a href="/notificaciones" className="relative text-slate-300 hover:text-white">
+                🔔
+                {noLeidas > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                    {noLeidas > 9 ? "9+" : noLeidas}
+                </span>
+                )}
+            </a>
             <span className="text-sm text-slate-300">{name}</span>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${rolInfo.color}`}>
                 {rolInfo.label}
@@ -61,6 +74,8 @@ import { signOut } from "@/lib/auth";
                 <DashCard title="Mi matrícula" desc="Ver y gestionar tu matrícula del período actual" href="/matricula" icon="📋" />
                 <DashCard title="Mis cursos" desc="Ver horarios y grupos matriculados" href="/horario" icon="📅" />
                 <DashCard title="Pagos" desc="Estado de pagos y facturas" href="/pagos" icon="💳" />
+                <DashCard title="Notificaciones" desc={noLeidas > 0 ? `${noLeidas} notificación(es) sin leer` : "Sin notificaciones nuevas"} href="/notificaciones" icon="🔔" />
+                <DashCard title="Estado de cuenta" desc="Ver montos adeudados y pagos realizados" href="/estado-cuenta" icon="🧾" />
                 </>
             )}
             {role === 2 && (

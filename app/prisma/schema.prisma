@@ -94,13 +94,15 @@ model MetodoPago {
 }
 
 model Periodo {
-  id_periodo   Int       @id @default(autoincrement())
-  descripcion  String    @db.VarChar(100)
-  activo       Boolean   @default(true)
-  fecha_inicio DateTime  @db.Date
-  fecha_fin    DateTime  @db.Date
-  grupos       Grupo[]
-  matriculas   Matricula[]
+  id_periodo            Int       @id @default(autoincrement())
+  descripcion           String    @db.VarChar(100)
+  activo                Boolean   @default(true)
+  fecha_inicio          DateTime  @db.Date
+  fecha_fin             DateTime  @db.Date
+  fecha_inicio_ajustes  DateTime? @db.Date
+  fecha_fin_ajustes     DateTime? @db.Date
+  grupos                Grupo[]
+  matriculas            Matricula[]
 
   @@map("periodos")
 }
