@@ -56,7 +56,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const matricula = await db.matricula.findUnique({
     where: { id_matricula: Number(id) },
-    include: { grupo: true },
+    include: { grupo: { include: { periodo: true } } },
   });
 
   if (!matricula) return err("Matrícula no encontrada", 404);
@@ -76,6 +76,25 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (matricula.estado === "cancelada") {
     return err("Esta matrícula ya está cancelada.");
   }
+
+const { fecha_inicio_ajustes, fecha_fin_ajustes } = matricula.grupo.periodo;  
+if (fecha_inicio_ajustes && fecha_fin_ajustes) {
+  const hoy = new Date();
+
+  if (hoy < fecha_inicio_ajustes || hoy > fecha_fin_ajustes) {
+    return err("La cancelacion solo esta permitida durante el periodoo de ajustes: ");
+  }
+}
+
+  // ── TODO(human) — RF-14: validar ventana de ajustes ──────────────────────
+  // Si el período tiene fecha_inicio_ajustes y fecha_fin_ajustes configuradas,
+  // solo permitir la cancelación si hoy está dentro de esa ventana.
+  // Si las fechas no están configuradas, la cancelación es libre (no restringir).
+
+  // ─────────────────────────────────────────────────────────────────────────
+
+
+
 
   // Cancelar en transacción: actualizar estado + decrementar cupo + promover lista de espera
   await db.$transaction(async (tx: Prisma.TransactionClient) => {

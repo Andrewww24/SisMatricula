@@ -27,10 +27,16 @@ export async function POST(req: NextRequest) {
   if (response) return response;
   void session;
 
-  let body: { descripcion?: string; fecha_inicio?: string; fecha_fin?: string };
+  let body: {
+    descripcion?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+    fecha_inicio_ajustes?: string | null;
+    fecha_fin_ajustes?: string | null;
+  };
   try { body = await req.json(); } catch { return err("Body JSON inválido"); }
 
-  const { descripcion, fecha_inicio, fecha_fin } = body;
+  const { descripcion, fecha_inicio, fecha_fin, fecha_inicio_ajustes, fecha_fin_ajustes } = body;
   if (!descripcion?.trim()) return err("El campo 'descripcion' es requerido");
   if (!fecha_inicio) return err("El campo 'fecha_inicio' es requerido");
   if (!fecha_fin)    return err("El campo 'fecha_fin' es requerido");
@@ -38,9 +44,11 @@ export async function POST(req: NextRequest) {
 
   const periodo = await db.periodo.create({
     data: {
-      descripcion:  descripcion.trim(),
-      fecha_inicio: new Date(fecha_inicio),
-      fecha_fin:    new Date(fecha_fin),
+      descripcion:           descripcion.trim(),
+      fecha_inicio:          new Date(fecha_inicio),
+      fecha_fin:             new Date(fecha_fin),
+      fecha_inicio_ajustes:  fecha_inicio_ajustes ? new Date(fecha_inicio_ajustes) : null,
+      fecha_fin_ajustes:     fecha_fin_ajustes    ? new Date(fecha_fin_ajustes)    : null,
     },
   });
   return created(periodo);

@@ -75,6 +75,7 @@ import { db } from "@/lib/db";
                 <DashCard title="Mis cursos" desc="Ver horarios y grupos matriculados" href="/horario" icon="📅" />
                 <DashCard title="Pagos" desc="Estado de pagos y facturas" href="/pagos" icon="💳" />
                 <DashCard title="Notificaciones" desc={noLeidas > 0 ? `${noLeidas} notificación(es) sin leer` : "Sin notificaciones nuevas"} href="/notificaciones" icon="🔔" />
+                <DashCard title="Estado de cuenta" desc="Ver montos adeudados y pagos realizados" href="/estado-cuenta" icon="🧾" />
                 </>
             )}
             {role === 2 && (

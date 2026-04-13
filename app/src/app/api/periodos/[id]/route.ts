@@ -11,7 +11,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
   void session;
 
   const { id } = await params;
-  let body: { descripcion?: string; fecha_inicio?: string; fecha_fin?: string; activo?: boolean };
+  let body: {
+    descripcion?: string;
+    fecha_inicio?: string;
+    fecha_fin?: string;
+    activo?: boolean;
+    fecha_inicio_ajustes?: string | null;
+    fecha_fin_ajustes?: string | null;
+  };
   try { body = await req.json(); } catch { return err("Body JSON inválido"); }
 
   const existing = await db.periodo.findUnique({ where: { id_periodo: Number(id) } });
@@ -24,10 +31,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const periodo = await db.periodo.update({
     where: { id_periodo: Number(id) },
     data: {
-      ...(body.descripcion  !== undefined && { descripcion:  body.descripcion.trim() }),
-      ...(body.fecha_inicio !== undefined && { fecha_inicio: new Date(body.fecha_inicio) }),
-      ...(body.fecha_fin    !== undefined && { fecha_fin:    new Date(body.fecha_fin) }),
-      ...(body.activo       !== undefined && { activo:       body.activo }),
+      ...(body.descripcion           !== undefined && { descripcion:          body.descripcion.trim() }),
+      ...(body.fecha_inicio          !== undefined && { fecha_inicio:         new Date(body.fecha_inicio) }),
+      ...(body.fecha_fin             !== undefined && { fecha_fin:            new Date(body.fecha_fin) }),
+      ...(body.activo                !== undefined && { activo:               body.activo }),
+      ...(body.fecha_inicio_ajustes  !== undefined && { fecha_inicio_ajustes: body.fecha_inicio_ajustes ? new Date(body.fecha_inicio_ajustes) : null }),
+      ...(body.fecha_fin_ajustes     !== undefined && { fecha_fin_ajustes:    body.fecha_fin_ajustes    ? new Date(body.fecha_fin_ajustes)    : null }),
     },
   });
 

@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 type Periodo = {
-  id_periodo:  number;
-  descripcion: string;
-  activo:      boolean;
-  fecha_inicio: string;
-  fecha_fin:    string;
+  id_periodo:           number;
+  descripcion:          string;
+  activo:               boolean;
+  fecha_inicio:         string;
+  fecha_fin:            string;
+  fecha_inicio_ajustes: string | null;
+  fecha_fin_ajustes:    string | null;
 };
 
 function formatFecha(iso: string) {
@@ -29,9 +31,11 @@ export default function PeriodosPage() {
   const [saving, setSaving]         = useState(false);
   const [formError, setFormError]   = useState("");
 
-  const [formDesc,   setFormDesc]   = useState("");
-  const [formInicio, setFormInicio] = useState("");
-  const [formFin,    setFormFin]    = useState("");
+  const [formDesc,          setFormDesc]          = useState("");
+  const [formInicio,        setFormInicio]        = useState("");
+  const [formFin,           setFormFin]           = useState("");
+  const [formInicioAjustes, setFormInicioAjustes] = useState("");
+  const [formFinAjustes,    setFormFinAjustes]    = useState("");
 
   const fetchPeriodos = useCallback(async () => {
     setLoading(true);
@@ -50,6 +54,8 @@ export default function PeriodosPage() {
     setFormDesc("");
     setFormInicio("");
     setFormFin("");
+    setFormInicioAjustes("");
+    setFormFinAjustes("");
     setFormError("");
     setModalOpen(true);
   }
@@ -57,9 +63,10 @@ export default function PeriodosPage() {
   function openEdit(p: Periodo) {
     setEditPeriodo(p);
     setFormDesc(p.descripcion);
-    // Recortar a YYYY-MM-DD para el input date
     setFormInicio(p.fecha_inicio.slice(0, 10));
     setFormFin(p.fecha_fin.slice(0, 10));
+    setFormInicioAjustes(p.fecha_inicio_ajustes?.slice(0, 10) ?? "");
+    setFormFinAjustes(p.fecha_fin_ajustes?.slice(0, 10) ?? "");
     setFormError("");
     setModalOpen(true);
   }
@@ -75,7 +82,13 @@ export default function PeriodosPage() {
       const res  = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ descripcion: formDesc, fecha_inicio: formInicio, fecha_fin: formFin }),
+        body: JSON.stringify({
+          descripcion:          formDesc,
+          fecha_inicio:         formInicio,
+          fecha_fin:            formFin,
+          fecha_inicio_ajustes: formInicioAjustes || null,
+          fecha_fin_ajustes:    formFinAjustes    || null,
+        }),
       });
       const json = await res.json();
       if (!json.ok) { setFormError(json.error); return; }
@@ -202,6 +215,26 @@ export default function PeriodosPage() {
                   type="date"
                   value={formFin}
                   onChange={(e) => setFormFin(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                />
+              </div>
+              <hr className="border-slate-100" />
+              <p className="text-xs text-slate-400">Período de ajustes (opcional) — ventana habilitada para cancelar matrículas</p>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Inicio ajustes</label>
+                <input
+                  type="date"
+                  value={formInicioAjustes}
+                  onChange={(e) => setFormInicioAjustes(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Fin ajustes</label>
+                <input
+                  type="date"
+                  value={formFinAjustes}
+                  onChange={(e) => setFormFinAjustes(e.target.value)}
                   className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
