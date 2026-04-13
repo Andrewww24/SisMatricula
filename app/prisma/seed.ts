@@ -18,6 +18,37 @@ const db = new PrismaClient();
 async function main() {
   console.log("🌱 Iniciando seed...");
 
+  // ─── TipoAuditoria ───────────────────────────────────────────────────────
+  const tiposAuditoria = [
+    { id_tipo_auditoria: 1, descripcion: "Login" },
+    { id_tipo_auditoria: 2, descripcion: "Matrícula" },
+    { id_tipo_auditoria: 3, descripcion: "Cancelación" },
+    { id_tipo_auditoria: 4, descripcion: "Pago" },
+    { id_tipo_auditoria: 5, descripcion: "Gestión" },
+  ];
+  for (const tipo of tiposAuditoria) {
+    await db.tipoAuditoria.upsert({
+      where:  { id_tipo_auditoria: tipo.id_tipo_auditoria },
+      update: {},
+      create: tipo,
+    });
+  }
+
+  // ─── MetodoPago ───────────────────────────────────────────────────────────
+  const metodosPago = [
+    { id_metodo_pago: 1, descripcion: "Efectivo" },
+    { id_metodo_pago: 2, descripcion: "Tarjeta" },
+    { id_metodo_pago: 3, descripcion: "Transferencia" },
+  ];
+  for (const metodo of metodosPago) {
+    await db.metodoPago.upsert({
+      where:  { id_metodo_pago: metodo.id_metodo_pago },
+      update: {},
+      create: metodo,
+    });
+  }
+  console.log("✅ TipoAuditoria y MetodoPago creados");
+
   // ─── Roles ────────────────────────────────────────────────────────────────
   const roles = [
     { id_rol: 1, descripcion: "Estudiante" },

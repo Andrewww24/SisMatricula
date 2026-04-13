@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ok, created, err, requireRoles, ROLES } from "@/lib/api-helpers";
 import { Prisma } from "@prisma/client";
+import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
 
 // GET /api/pagos — mis pagos (estudiante) o por cédula (admin/tesorería)
 export async function GET(req: NextRequest) {
@@ -109,6 +110,16 @@ export async function POST(req: NextRequest) {
       });
 
       return { pago, factura, matricula: matriculaConfirmada };
+    });
+
+    // RF-03: Auditoría de pago
+    await registrarAuditoria({
+      id_tipo_auditoria: TIPO_AUDITORIA.PAGO,
+      cedula_usuario:    session!.user.cedula,
+      tabla_afectada:    "pagos",
+      id_registro:       String(resultado.pago.id_pago),
+      accion:            "CREATE",
+      descripcion:       `Pago ₡${monto} confirmado para matrícula #${id_matricula}`,
     });
 
     return created(resultado);

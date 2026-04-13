@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ok, err, requireRoles, ROLES } from "@/lib/api-helpers";
 import { Prisma } from "@prisma/client";
+import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -114,6 +115,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       // Eliminar de la lista de espera
       await tx.listaEspera.delete({ where: { id_espera: siguiente.id_espera } });
     }
+  });
+
+  // RF-03: Auditoría de cancelación
+  await registrarAuditoria({
+    id_tipo_auditoria: TIPO_AUDITORIA.CANCELACION,
+    cedula_usuario:    session!.user.cedula,
+    tabla_afectada:    "matricula",
+    id_registro:       id,
+    accion:            "DELETE",
+    descripcion:       `Cancelación de matrícula #${id}`,
   });
 
   return ok({ mensaje: "Matrícula cancelada correctamente." });

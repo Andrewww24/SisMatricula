@@ -2,6 +2,7 @@ import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
 
     // ─── Extensión de tipos NextAuth ──────────────────────────────────────────────
     declare module "next-auth" {
@@ -54,6 +55,16 @@ import { db } from "@/lib/db";
             persona.password_hash
             );
             if (!valid) return null;
+
+            // RF-03: Auditoría de login exitoso
+            await registrarAuditoria({
+              id_tipo_auditoria: TIPO_AUDITORIA.LOGIN,
+              cedula_usuario:    persona.cedula,
+              tabla_afectada:    "persona",
+              id_registro:       persona.cedula,
+              accion:            "LOGIN",
+              descripcion:       `Inicio de sesión exitoso`,
+            });
 
             return {
             id: persona.cedula,
