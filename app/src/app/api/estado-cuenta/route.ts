@@ -2,8 +2,6 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ok, requireRoles, ROLES } from "@/lib/api-helpers";
 
-const COSTO_POR_CREDITO = 15_000;
-
 // GET /api/estado-cuenta — estado de cuenta del estudiante (RF-16)
 export async function GET(_req: NextRequest) {
   const { session, response } = await requireRoles([ROLES.ESTUDIANTE]);
@@ -19,7 +17,7 @@ export async function GET(_req: NextRequest) {
     include: {
       grupo: {
         include: {
-          curso:   { select: { descripcion: true, creditos: true } },
+          curso:   { select: { descripcion: true, creditos: true, costo: true } },
           periodo: { select: { descripcion: true } },
         },
       },
@@ -33,11 +31,11 @@ export async function GET(_req: NextRequest) {
   const pendientes = matriculas
     .filter((m) => m.estado === "pendiente")
     .map((m) => ({
-      id_matricula:  m.id_matricula,
-      curso:         m.grupo.curso.descripcion,
-      creditos:      m.grupo.curso.creditos,
-      periodo:       m.grupo.periodo.descripcion,
-      monto_adeudado: m.grupo.curso.creditos * COSTO_POR_CREDITO,
+      id_matricula:   m.id_matricula,
+      curso:          m.grupo.curso.descripcion,
+      creditos:       m.grupo.curso.creditos,
+      periodo:        m.grupo.periodo.descripcion,
+      monto_adeudado: Number(m.grupo.curso.costo),
     }));
 
   const confirmadas = matriculas

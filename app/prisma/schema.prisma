@@ -168,6 +168,7 @@ model Curso {
   activo      Boolean @default(true)
   id_carrera  Int
   creditos    Int     @default(0)
+  costo       Decimal @default(0) @db.Decimal(10, 2)
 
   carrera       Carrera        @relation(fields: [id_carrera], references: [id_carrera])
   grupos        Grupo[]

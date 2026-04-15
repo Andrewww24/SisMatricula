@@ -99,7 +99,7 @@ import { db } from "@/lib/db";
             </div>
 
             <p className="mt-10 text-xs text-slate-400 text-center">
-            Módulos en desarrollo — próximamente disponibles
+            
             </p>
         </div>
         </main>
