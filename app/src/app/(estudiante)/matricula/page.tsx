@@ -71,6 +71,27 @@ export default function MatriculaPage() {
   // Tabs
   const [tab, setTab] = useState<"oferta" | "mis">("oferta");
 
+  // Modal requisitos del estudiante
+  type ReqInfo = { id: number; curso: { id_curso: number; descripcion: string } };
+  const [reqModal, setReqModal] = useState<{ id_curso: number; descripcion: string } | null>(null);
+  const [reqModalData, setReqModalData] = useState<{ prereqs: ReqInfo[]; coreqs: ReqInfo[] } | null>(null);
+  const [reqModalLoading, setReqModalLoading] = useState(false);
+
+  async function openReqModal(id_curso: number, descripcion: string) {
+    setReqModal({ id_curso, descripcion });
+    setReqModalData(null);
+    setReqModalLoading(true);
+    const res  = await fetch(`/api/prerequisitos?curso=${id_curso}`);
+    const json = await res.json();
+    if (json.ok) {
+      setReqModalData({
+        prereqs: json.data.prereqs.map((p: { id_prerequisito: number; requisito: { id_curso: number; descripcion: string } }) => ({ id: p.id_prerequisito, curso: p.requisito })),
+        coreqs:  json.data.coreqs.map((p: { id_correquisito: number; correquisito: { id_curso: number; descripcion: string } }) => ({ id: p.id_correquisito, curso: p.correquisito })),
+      });
+    }
+    setReqModalLoading(false);
+  }
+
   // ── Cargar catálogos ────────────────────────────────────────────────────────
   useEffect(() => {
     Promise.all([
@@ -270,7 +291,16 @@ export default function MatriculaPage() {
                       return (
                         <tr key={g.id_grupo} className="hover:bg-slate-50">
                           <td className="px-5 py-3">
-                            <div className="font-medium text-slate-800">{g.curso.descripcion}</div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-slate-800">{g.curso.descripcion}</span>
+                              <button
+                                onClick={() => openReqModal(g.curso.id_curso, g.curso.descripcion)}
+                                title="Ver prerrequisitos y correquisitos"
+                                className="text-slate-400 hover:text-[#2563EB] text-xs leading-none transition-colors"
+                              >
+                                ⓘ
+                              </button>
+                            </div>
                             <div className="text-xs text-slate-400">{g.carrera.descripcion}</div>
                           </td>
                           <td className="px-5 py-3 text-slate-600">{g.descripcion}</td>
@@ -378,6 +408,63 @@ export default function MatriculaPage() {
           </>
         )}
       </div>
+
+      {/* Modal requisitos del curso */}
+      {reqModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7">
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <h2 className="text-base font-bold text-slate-800">Requisitos</h2>
+                <p className="text-xs text-slate-500 mt-0.5">{reqModal.descripcion}</p>
+              </div>
+              <button onClick={() => setReqModal(null)} className="text-slate-400 hover:text-slate-700 text-xl leading-none">×</button>
+            </div>
+
+            {reqModalLoading ? (
+              <p className="text-slate-500 text-sm">Cargando...</p>
+            ) : reqModalData && (
+              <div className="space-y-4">
+                <section>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Prerrequisitos</h3>
+                  {reqModalData.prereqs.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">No tiene prerrequisitos</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {reqModalData.prereqs.map((r) => (
+                        <li key={r.id} className="flex items-center gap-2 text-sm text-slate-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                          <span className="text-amber-500">⚠</span>
+                          {r.curso.descripcion}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                <section>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Correquisitos</h3>
+                  {reqModalData.coreqs.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">No tiene correquisitos</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {reqModalData.coreqs.map((r) => (
+                        <li key={r.id} className="flex items-center gap-2 text-sm text-slate-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                          <span className="text-blue-400">↔</span>
+                          {r.curso.descripcion}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                <p className="text-xs text-slate-400 pt-1">
+                  Los prerrequisitos deben estar <strong>aprobados</strong> antes de inscribirte. Los correquisitos deben cursarse en el <strong>mismo período</strong>.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -147,6 +147,24 @@
         }
         }
 
+        // ── RF-12: Correquisitos ─────────────────────────────────────────────────
+        const correquisitos = await db.correquisito.findMany({
+          where: { id_curso: grupo.id_curso },
+          include: { correquisito: { select: { id_curso: true, descripcion: true } } },
+        });
+        if (correquisitos.length > 0) {
+          const cursosEnPeriodo = new Set(
+            matriculasActuales.map((m: typeof matriculasActuales[number]) => m.grupo.id_curso)
+          );
+          for (const coreq of correquisitos) {
+            if (!cursosEnPeriodo.has(coreq.id_curso_coreq)) {
+              return err(
+                `Correquisito requerido: debes inscribirte también en "${coreq.correquisito.descripcion}" en este mismo período.`
+              );
+            }
+          }
+        }
+
         // ── Sin cupo → lista de espera ───────────────────────────────────────────
         if (sinCupo) {
         const enEspera = await db.listaEspera.findFirst({ where: { cedula_persona: cedula, id_grupo } });

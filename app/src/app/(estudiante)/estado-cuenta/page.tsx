@@ -70,6 +70,17 @@ export default function EstadoCuentaPage() {
   const [modalPago, setModalPago]           = useState<Pendiente | null>(null);
   const [metodoSeleccionado, setMetodo]     = useState(1);
   const [pagando, setPagando]               = useState(false);
+  const [cardNum,  setCardNum]  = useState("");
+  const [cardExp,  setCardExp]  = useState("");
+  const [cardCvc,  setCardCvc]  = useState("");
+
+  function formatCardNum(val: string) {
+    return val.replace(/\D/g, "").slice(0, 16).match(/.{1,4}/g)?.join(" ") ?? "";
+  }
+  function formatExp(val: string) {
+    const d = val.replace(/\D/g, "").slice(0, 4);
+    return d.length >= 3 ? d.slice(0, 2) + " / " + d.slice(2) : d;
+  }
 
   function cargarDatos() {
     setLoading(true);
@@ -138,7 +149,7 @@ export default function EstadoCuentaPage() {
                           </td>
                           <td className="px-4 py-3 text-right">
                             <button
-                              onClick={() => { setModalPago(m); setMetodo(1); }}
+                              onClick={() => { setModalPago(m); setMetodo(1); setCardNum(""); setCardExp(""); setCardCvc(""); }}
                               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                             >
                               Pagar
@@ -217,19 +228,72 @@ export default function EstadoCuentaPage() {
             {/* Selector de método de pago */}
             <p className="text-sm font-medium text-slate-700 mb-3">Elegí tu método de pago</p>
 
-            {/* TODO(human): Implementá las 3 cards del selector de método de pago.
-                Tenés disponible el array METODOS (definido arriba del componente):
-                  [{ id: 1, icono: "💵", label: "Efectivo" },
-                   { id: 2, icono: "💳", label: "Tarjeta" },
-                   { id: 3, icono: "🏦", label: "Transferencia" }]
-                Cada card debe ser un <button> que:
-                  - Muestre el icono y el label
-                  - Llame a setMetodo(m.id) al hacer click
-                  - Tenga borde azul (border-[#2563EB]) si metodoSeleccionado === m.id
-                  - Tenga borde gris (border-slate-200) si no está seleccionado */}
             <div className="grid grid-cols-3 gap-2 mb-6">
-              {/* Implementá las cards aquí usando METODOS.map(...) */}
+              {METODOS.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setMetodo(m.id)}
+                  className={`flex flex-col items-center gap-1 py-3 rounded-xl border-2 text-sm transition-colors ${
+                    metodoSeleccionado === m.id
+                      ? "border-[#2563EB] bg-blue-50 text-[#2563EB]"
+                      : "border-slate-200 text-slate-600 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="text-xl">{m.icono}</span>
+                  <span className="text-xs font-medium">{m.label}</span>
+                </button>
+              ))}
             </div>
+
+            {/* Formulario de tarjeta */}
+            {metodoSeleccionado === 2 && (
+              <div className="mb-6 space-y-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1 block">Número de tarjeta</label>
+                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1234 1234 1234 1234"
+                        value={cardNum}
+                        onChange={(e) => setCardNum(formatCardNum(e.target.value))}
+                        className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-300"
+                      />
+                      <span className="text-xs text-slate-400 flex gap-1">
+                        <span>VISA</span><span>MC</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">MM / AA</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM / AA"
+                        value={cardExp}
+                        onChange={(e) => setCardExp(formatExp(e.target.value))}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none text-slate-800 placeholder:text-slate-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">CVC</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="123"
+                        maxLength={3}
+                        value={cardCvc}
+                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none text-slate-800 placeholder:text-slate-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 text-center">Simulación — no se procesa ningún cobro real</p>
+              </div>
+            )}
 
             {/* Botones de acción */}
             <div className="flex gap-3">
