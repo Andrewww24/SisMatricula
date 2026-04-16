@@ -109,22 +109,3 @@ prisma/
 └── schema.prisma         # Modelos de la base de datos
 ```
 
-## Flujo de matrícula (RF-12)
-
-`POST /api/matricula` valida en orden:
-
-1. Cuenta no bloqueada ni morosa
-2. Grupo existe y está activo
-3. No inscrito previamente en el mismo grupo
-4. Cupo disponible (si no, agrega a `lista_espera`)
-5. Límite de 18 créditos por período
-6. Sin choque de horario
-7. Prerrequisitos aprobados (`estado = "confirmada"`)
-8. Correquisitos inscritos en el mismo período
-
-## Prerrequisitos y correquisitos (RF-07)
-
-- **Admin**: botón "Requisitos" en `/admin/gestion/cursos` para asignar/eliminar
-- **Estudiante**: ícono ⓘ en la oferta académica para consultar requisitos de cada curso
-- La API detecta ciclos automáticamente (A→B→A es rechazado)
-- Endpoints: `GET/POST /api/prerequisitos`, `DELETE /api/prerequisitos/[id]`

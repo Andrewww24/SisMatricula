@@ -80,6 +80,20 @@
         if (!grupo)        return err("Grupo no encontrado", 404);
         if (!grupo.activo) return err("Este grupo no está disponible.");
 
+        // ── RF-14: Ventana de inscripción ────────────────────────────────────────
+        const hoy          = new Date();
+        const enMatricula  = hoy >= grupo.periodo.fecha_inicio && hoy <= grupo.periodo.fecha_fin;
+        const enAjustes    = grupo.periodo.fecha_inicio_ajustes && grupo.periodo.fecha_fin_ajustes
+          && hoy >= grupo.periodo.fecha_inicio_ajustes && hoy <= grupo.periodo.fecha_fin_ajustes;
+
+        if (!enMatricula && !enAjustes) {
+          const fmt = (d: Date) => d.toLocaleDateString("es-CR");
+          const ventanas = [`matrícula: ${fmt(grupo.periodo.fecha_inicio)} – ${fmt(grupo.periodo.fecha_fin)}`];
+          if (grupo.periodo.fecha_inicio_ajustes && grupo.periodo.fecha_fin_ajustes)
+            ventanas.push(`ajustes: ${fmt(grupo.periodo.fecha_inicio_ajustes)} – ${fmt(grupo.periodo.fecha_fin_ajustes)}`);
+          return err(`Inscripción no disponible. Las ventanas habilitadas son: ${ventanas.join(" / ")}.`);
+        }
+
         // ── Ya inscrito en este grupo ────────────────────────────────────────────
         const yaInscrito = await db.matricula.findFirst({
         where: { cedula_persona: cedula, id_grupo, estado: { not: "cancelada" } },

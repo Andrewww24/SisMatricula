@@ -24,7 +24,27 @@ type Matricula = {
   fecha_matricula: string;
   grupo: Grupo;
 };
-type Periodo = { id_periodo: number; descripcion: string };
+type Periodo = {
+  id_periodo:            number;
+  descripcion:           string;
+  fecha_inicio:          string;
+  fecha_fin:             string;
+  fecha_inicio_ajustes?: string | null;
+  fecha_fin_ajustes?:    string | null;
+}
+
+type VentanaEstado = "abierta" | "ajustes" | "cerrada";
+
+function getWindowStatus(p: Periodo): VentanaEstado {
+  const hoy = new Date();
+  const inicioAjustes = p.fecha_inicio_ajustes ? new Date(p.fecha_inicio_ajustes) : null;
+  const finAjustes    = p.fecha_fin_ajustes    ? new Date(p.fecha_fin_ajustes)    : null;
+  const inicio = new Date(p.fecha_inicio);
+  const fin    = new Date(p.fecha_fin);
+  if (inicioAjustes && finAjustes && hoy >= inicioAjustes && hoy <= finAjustes) return "ajustes";
+  if (hoy >= inicio && hoy <= fin) return "abierta";
+  return "cerrada";
+};
 type Carrera = { id_carrera: number; descripcion: string };
 
 const DIAS = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -260,6 +280,24 @@ export default function MatriculaPage() {
                 ))}
               </select>
             </div>
+
+            {/* Banner estado de ventana RF-14 */}
+            {filtroPeriodo && (() => {
+              const p = periodos.find((x) => String(x.id_periodo) === filtroPeriodo);
+              if (!p) return null;
+              const estado = getWindowStatus(p);
+              const banners: Record<VentanaEstado, { cls: string; msg: string }> = {
+                abierta: { cls: "bg-green-50 border-green-200 text-green-700", msg: `Matrícula abierta hasta el ${new Date(p.fecha_fin).toLocaleDateString("es-CR")}` },
+                ajustes: { cls: "bg-blue-50 border-blue-200 text-blue-700",   msg: `Período de ajustes activo hasta el ${new Date(p.fecha_fin_ajustes!).toLocaleDateString("es-CR")}` },
+                cerrada: { cls: "bg-amber-50 border-amber-200 text-amber-700", msg: "El período de inscripción está cerrado. No se pueden realizar nuevas inscripciones." },
+              };
+              const { cls, msg } = banners[estado];
+              return (
+                <div className={`mb-4 px-4 py-2.5 rounded-xl border text-sm font-medium ${cls}`}>
+                  {msg}
+                </div>
+              );
+            })()}
 
             {/* Tabla de oferta */}
             {loadingGrupos ? (
