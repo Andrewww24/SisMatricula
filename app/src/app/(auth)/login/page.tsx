@@ -3,6 +3,7 @@
     import { useState } from "react";
     import { signIn } from "next-auth/react";
     import { useRouter } from "next/navigation";
+    import Link from "next/link";
 
     export default function LoginPage() {
         const [cedula, setCedula] = useState("");
@@ -111,8 +112,13 @@
                 </button>
             </form>
 
-            <div className="mt-6 text-center text-xs text-slate-400">
+            <div className="mt-6 text-center space-y-2">
+              <Link href="/activar-cuenta" className="block text-sm text-[#2563EB] hover:underline">
+                ¿Primera vez aquí? Activá tu cuenta
+              </Link>
+              <div className="text-xs text-slate-400">
                 ¿Problemas para acceder? Contactá a administración
+              </div>
             </div>
             </div>
         </div>

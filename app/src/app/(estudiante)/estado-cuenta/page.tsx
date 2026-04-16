@@ -26,6 +26,26 @@ type EstadoCuenta = {
   total_pagado:   number;
 };
 
+async function handlePagar(
+  id_matricula: number,
+  id_metodo_pago: number,
+  cargarDatos: () => void
+): Promise<void> {
+  const res = await fetch("/api/pagos", {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ id_matricula, id_metodo_pago }),
+  });
+  const json = await res.json();
+
+  if (!json.ok) {
+    alert(json.error || "Error al procesar el pago");
+    return;
+  }
+
+  cargarDatos();
+}
+
 function fmtMonto(n: number) {
   return new Intl.NumberFormat("es-CR", {
     style: "currency", currency: "CRC", maximumFractionDigits: 0,
@@ -38,16 +58,39 @@ function fmtFecha(iso: string) {
   });
 }
 
+const METODOS = [
+  { id: 1, icono: "💵", label: "Efectivo" },
+  { id: 2, icono: "💳", label: "Tarjeta" },
+  { id: 3, icono: "🏦", label: "Transferencia" },
+];
+
 export default function EstadoCuentaPage() {
   const [data,    setData]    = useState<EstadoCuenta | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modalPago, setModalPago]           = useState<Pendiente | null>(null);
+  const [metodoSeleccionado, setMetodo]     = useState(1);
+  const [pagando, setPagando]               = useState(false);
+  const [cardNum,  setCardNum]  = useState("");
+  const [cardExp,  setCardExp]  = useState("");
+  const [cardCvc,  setCardCvc]  = useState("");
 
-  useEffect(() => {
+  function formatCardNum(val: string) {
+    return val.replace(/\D/g, "").slice(0, 16).match(/.{1,4}/g)?.join(" ") ?? "";
+  }
+  function formatExp(val: string) {
+    const d = val.replace(/\D/g, "").slice(0, 4);
+    return d.length >= 3 ? d.slice(0, 2) + " / " + d.slice(2) : d;
+  }
+
+  function cargarDatos() {
+    setLoading(true);
     fetch("/api/estado-cuenta")
       .then((r) => r.json())
       .then((j) => { if (j.ok) setData(j.data); })
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { cargarDatos(); }, []);
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -80,7 +123,7 @@ export default function EstadoCuentaPage() {
               </div>
             </div>
 
-            {/* Montos pendientes */}
+            {/* Cargos pendientes */}
             {data.pendientes.length > 0 && (
               <section>
                 <h2 className="text-sm font-semibold text-slate-700 mb-3">Cargos pendientes de pago</h2>
@@ -92,6 +135,7 @@ export default function EstadoCuentaPage() {
                         <th className="text-left px-4 py-3 text-slate-500 font-medium">Período</th>
                         <th className="text-right px-4 py-3 text-slate-500 font-medium">Créditos</th>
                         <th className="text-right px-4 py-3 text-slate-500 font-medium">Monto</th>
+                        <th className="px-4 py-3" />
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -103,6 +147,14 @@ export default function EstadoCuentaPage() {
                           <td className="px-4 py-3 text-red-600 text-xs font-semibold text-right">
                             {fmtMonto(m.monto_adeudado)}
                           </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => { setModalPago(m); setMetodo(1); setCardNum(""); setCardExp(""); setCardCvc(""); }}
+                              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              Pagar
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -110,11 +162,12 @@ export default function EstadoCuentaPage() {
                       <tr>
                         <td colSpan={3} className="px-4 py-3 text-xs font-semibold text-slate-700">Total a pagar</td>
                         <td className="px-4 py-3 text-xs font-bold text-red-600 text-right">{fmtMonto(data.total_adeudado)}</td>
+                        <td />
                       </tr>
                     </tfoot>
                   </table>
                 </div>
-                <p className="text-xs text-slate-400 mt-2">Dirígete a Tesorería para realizar el pago y confirmar tu matrícula.</p>
+                <p className="text-xs text-slate-400 mt-2">Seleccioná una matrícula y elegí tu método de pago para confirmarla.</p>
               </section>
             )}
 
@@ -159,6 +212,114 @@ export default function EstadoCuentaPage() {
           </>
         )}
       </div>
+
+      {/* Modal de pago */}
+      {modalPago && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
+
+            {/* Resumen del cobro */}
+            <div className="text-center mb-6">
+              <p className="text-xs text-slate-500 mb-1">Tu compra</p>
+              <p className="text-3xl font-bold text-red-600">{fmtMonto(modalPago.monto_adeudado)}</p>
+              <p className="text-sm text-slate-600 mt-1 font-medium">{modalPago.curso}</p>
+            </div>
+
+            {/* Selector de método de pago */}
+            <p className="text-sm font-medium text-slate-700 mb-3">Elegí tu método de pago</p>
+
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {METODOS.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setMetodo(m.id)}
+                  className={`flex flex-col items-center gap-1 py-3 rounded-xl border-2 text-sm transition-colors ${
+                    metodoSeleccionado === m.id
+                      ? "border-[#2563EB] bg-blue-50 text-[#2563EB]"
+                      : "border-slate-200 text-slate-600 hover:border-slate-300"
+                  }`}
+                >
+                  <span className="text-xl">{m.icono}</span>
+                  <span className="text-xs font-medium">{m.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Formulario de tarjeta */}
+            {metodoSeleccionado === 2 && (
+              <div className="mb-6 space-y-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <div>
+                    <label className="text-xs text-slate-500 mb-1 block">Número de tarjeta</label>
+                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="1234 1234 1234 1234"
+                        value={cardNum}
+                        onChange={(e) => setCardNum(formatCardNum(e.target.value))}
+                        className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-300"
+                      />
+                      <span className="text-xs text-slate-400 flex gap-1">
+                        <span>VISA</span><span>MC</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">MM / AA</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM / AA"
+                        value={cardExp}
+                        onChange={(e) => setCardExp(formatExp(e.target.value))}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none text-slate-800 placeholder:text-slate-300"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">CVC</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="123"
+                        maxLength={3}
+                        value={cardCvc}
+                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none text-slate-800 placeholder:text-slate-300"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 text-center">Simulación — no se procesa ningún cobro real</p>
+              </div>
+            )}
+
+            {/* Botones de acción */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalPago(null)}
+                disabled={pagando}
+                className="flex-1 text-sm text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl py-2.5 transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={pagando}
+                onClick={async () => {
+                  setPagando(true);
+                  await handlePagar(modalPago.id_matricula, metodoSeleccionado, cargarDatos);
+                  setPagando(false);
+                  setModalPago(null);
+                }}
+                className="flex-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-60"
+              >
+                {pagando ? "Procesando..." : "Confirmar pago →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

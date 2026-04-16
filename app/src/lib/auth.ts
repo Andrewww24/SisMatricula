@@ -33,8 +33,17 @@ import { registrarAuditoria, TIPO_AUDITORIA } from "@/lib/auditoria";
         async authorize(credentials) {
             if (!credentials?.cedula || !credentials?.password) return null;
 
+            // Aceptar correo institucional: cedula@cuc.cr → extraer cédula
+            const input = credentials.cedula as string;
+            let cedula = input;
+            if (input.includes("@")) {
+              const [local, domain] = input.split("@");
+              if (domain !== "cuc.cr") return null;
+              cedula = local;
+            }
+
             const persona = await db.persona.findUnique({
-            where: { cedula: credentials.cedula as string },
+            where: { cedula },
             select: {
                 cedula: true,
                 nombre: true,

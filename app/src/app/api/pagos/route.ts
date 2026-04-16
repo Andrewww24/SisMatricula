@@ -44,9 +44,9 @@ export async function GET(req: NextRequest) {
   return ok(pagos);
 }
 
-// POST /api/pagos — registrar pago y confirmar matrícula (Tesorería / Admin)
+// POST /api/pagos — registrar pago y confirmar matrícula (Tesorería / Admin / Estudiante)
 export async function POST(req: NextRequest) {
-  const { session, response } = await requireRoles([ROLES.TESORERIA, ROLES.ADMIN]);
+  const { session, response } = await requireRoles([ROLES.TESORERIA, ROLES.ADMIN, ROLES.ESTUDIANTE]);
   if (response) return response;
 
   let body: {
@@ -57,9 +57,8 @@ export async function POST(req: NextRequest) {
   };
   try { body = await req.json(); } catch { return err("Body JSON inválido"); }
 
-  const { id_matricula, monto, id_metodo_pago = 1, descripcion } = body;
+  const { id_matricula, id_metodo_pago = 1, descripcion } = body;
   if (!id_matricula) return err("El campo 'id_matricula' es requerido");
-  if (!monto || monto <= 0) return err("El monto debe ser mayor a 0");
 
   const matricula = await db.matricula.findUnique({
     where: { id_matricula },
@@ -69,6 +68,22 @@ export async function POST(req: NextRequest) {
   if (!matricula) return err("Matrícula no encontrada", 404);
   if (matricula.estado === "confirmada") return err("Esta matrícula ya está confirmada.");
   if (matricula.estado === "cancelada")  return err("No se puede pagar una matrícula cancelada.");
+
+  // Estudiante solo puede pagar sus propias matrículas
+  if (
+    session!.user.role === ROLES.ESTUDIANTE &&
+    matricula.cedula_persona !== session!.user.cedula
+  ) {
+    return err("No autorizado", 403);
+  }
+
+  // El monto viene del costo del curso en BD (estudiante) o del body (tesorería/admin)
+  const monto =
+    session!.user.role === ROLES.ESTUDIANTE
+      ? Number(matricula.grupo.curso.costo)
+      : (body.monto ?? 0);
+
+  if (!monto || monto <= 0) return err("El monto debe ser mayor a 0");
 
   // Garantizar que exista el método de pago (setup experimental)
   await db.metodoPago.upsert({

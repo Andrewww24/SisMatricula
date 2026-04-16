@@ -32,3 +32,29 @@ input, select, textarea {
 input::placeholder, textarea::placeholder {
   color: #94a3b8;
 }
+
+@media print {
+  /* Ocultar elementos de navegación y UI */
+  header nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Fondo blanco, texto negro para impresión */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Asegurar que los colores de fondo se impriman */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Centrar y dar margen al contenido impreso */
+  .max-w-2xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}

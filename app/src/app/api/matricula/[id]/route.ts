@@ -82,18 +82,9 @@ if (fecha_inicio_ajustes && fecha_fin_ajustes) {
   const hoy = new Date();
 
   if (hoy < fecha_inicio_ajustes || hoy > fecha_fin_ajustes) {
-    return err("La cancelacion solo esta permitida durante el periodoo de ajustes: ");
+    return err(`La cancelacion solo esta permitida durante el periodo de ajustes: ${fecha_inicio_ajustes.toLocaleDateString()} - ${fecha_fin_ajustes.toLocaleDateString()}`);
   }
 }
-
-  // ── TODO(human) — RF-14: validar ventana de ajustes ──────────────────────
-  // Si el período tiene fecha_inicio_ajustes y fecha_fin_ajustes configuradas,
-  // solo permitir la cancelación si hoy está dentro de esa ventana.
-  // Si las fechas no están configuradas, la cancelación es libre (no restringir).
-
-  // ─────────────────────────────────────────────────────────────────────────
-
-
 
 
   // Cancelar en transacción: actualizar estado + decrementar cupo + promover lista de espera

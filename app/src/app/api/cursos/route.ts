@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ok, created, err, requireRoles, ROLES } from "@/lib/api-helpers";
 
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
     descripcion?: string;
     id_carrera?: number;
     creditos?: number;
+    costo?: number;
     pre_requisitos?: number[];
   };
 
@@ -50,7 +52,7 @@ export async function POST(req: NextRequest) {
     return err("Body JSON inválido");
   }
 
-  const { descripcion, id_carrera, creditos = 0, pre_requisitos = [] } = body;
+  const { descripcion, id_carrera, creditos = 0, costo = 0, pre_requisitos = [] } = body;
 
   if (!descripcion?.trim()) return err("El campo 'descripcion' es requerido");
   if (!id_carrera) return err("El campo 'id_carrera' es requerido");
@@ -64,6 +66,7 @@ export async function POST(req: NextRequest) {
       descripcion: descripcion.trim(),
       id_carrera,
       creditos,
+      costo: new Prisma.Decimal(costo),
       ...(pre_requisitos.length > 0 && {
         pre_requisitos: {
           create: pre_requisitos.map((id_curso_req) => ({ id_curso_req })),

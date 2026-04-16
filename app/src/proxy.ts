@@ -15,7 +15,7 @@ export default auth((req) => {
   }
 
   // Rutas que no requieren autenticación
-  const publicPaths = ["/"];
+  const publicPaths = ["/", "/activar-cuenta", "/api/activar-cuenta"];
   if (publicPaths.includes(pathname)) {
     return NextResponse.next();
   }

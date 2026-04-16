@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { ok, err, requireRoles, ROLES } from "@/lib/api-helpers";
 
@@ -47,6 +48,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     descripcion?: string;
     id_carrera?: number;
     creditos?: number;
+    costo?: number;
     activo?: boolean;
   };
 
@@ -56,7 +58,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return err("Body JSON inválido");
   }
 
-  const { descripcion, id_carrera, creditos, activo } = body;
+  const { descripcion, id_carrera, creditos, costo, activo } = body;
 
   const existing = await db.curso.findUnique({ where: { id_curso: Number(id) } });
   if (!existing) return err("Curso no encontrado", 404);
@@ -72,6 +74,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       ...(descripcion !== undefined && { descripcion: descripcion.trim() }),
       ...(id_carrera !== undefined && { id_carrera }),
       ...(creditos   !== undefined && { creditos }),
+      ...(costo      !== undefined && { costo: new Prisma.Decimal(costo) }),
       ...(activo     !== undefined && { activo }),
     },
     include: {

@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SisMatrícula — Sistema de Matrícula Universitaria
 
-## Getting Started
+Plataforma web para gestión de matrícula académica, pagos y administración de cursos.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router) con TypeScript
+- **Prisma ORM** → **PostgreSQL en Supabase**
+- **NextAuth v5 (beta)** — autenticación con JWT y Credentials provider
+- **Tailwind CSS v4**
+
+## Requisitos
+
+- Node.js 18+
+- Acceso a una instancia de Supabase (PostgreSQL)
+
+## Variables de entorno
+
+Crear un archivo `.env.local` en `app/` con:
+
+```env
+DATABASE_URL=     # Conexión pooled de Supabase (para queries)
+DIRECT_URL=       # Conexión directa de Supabase (para migraciones)
+AUTH_SECRET=      # Secret para NextAuth (genera con: openssl rand -base64 32)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Comandos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Todos los comandos deben ejecutarse desde el directorio `app/`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # Servidor de desarrollo en localhost:3000
+npm run build        # Build de producción
+npm run lint         # ESLint
 
-## Learn More
+npx prisma generate  # Regenerar Prisma Client tras cambios en schema
+npx prisma db push   # Aplicar cambios del schema a Supabase (solo dev)
+npx prisma studio    # GUI para inspeccionar la base de datos
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Roles y acceso
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Rol | ID | Rutas |
+|---|---|---|
+| Estudiante | 1 | `/dashboard`, `/matricula`, `/estado-cuenta` |
+| Admin | 2 | `/admin/gestion/*`, `/admin/auditoria`, `/admin/reportes` |
+| Tesorería | 3 | Acceso a reportes financieros |
+| Docente | 4 | — |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+El login se realiza con `cédula` + contraseña en `/login`.
 
-## Deploy on Vercel
+## Requerimientos implementados
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| RF | Descripción | Estado |
+|---|---|---|
+| RF-01 | Autenticación con credenciales | ✅ |
+| RF-02 | Roles y permisos por layout | ✅ |
+| RF-03 | Bitácora de auditoría | ✅ |
+| RF-04 | Gestión de carreras | ✅ |
+| RF-05 | Catálogo de cursos | ✅ |
+| RF-06 | Gestión de períodos académicos | ✅ |
+| RF-07 | Configuración de prerrequisitos y correquisitos | ✅ |
+| RF-08 | Creación de secciones (grupos) | ✅ |
+| RF-09 | Administración de horarios y aulas | ✅ |
+| RF-10 | Control de cupos por sección | ✅ |
+| RF-11 | Visualización de oferta académica | ✅ |
+| RF-12 | Validaciones de matrícula (cupo, horario, prereqs, coreqs, créditos, morosidad) | ✅ |
+| RF-13 | Comprobante de matrícula | ✅ |
+| RF-14 | Ajustes en período autorizado | ✅ |
+| RF-15 | Cálculo de costos de matrícula | ✅ |
+| RF-16 | Estado de cuenta del estudiante | ✅ |
+| RF-17 | Simulación de pasarela de pago | ✅ |
+| RF-18 | Bloqueo por morosidad | ✅ |
+| RF-19 | Registro de pagos | ✅ |
+| RF-20 | Reportes de matrícula | ✅ |
+| RF-21 | Reportes financieros | ✅ |
+| RF-22 | Exportación CSV | ✅ |
+| RF-23 | Notificaciones in-app de matrícula | ✅ |
+| RF-24 | Notificaciones in-app de pagos | ✅ |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura de carpetas clave
+
+```
+app/src/
+├── app/
+│   ├── (admin)/          # Rutas protegidas rol Admin
+│   │   └── admin/
+│   │       ├── gestion/  # Cursos, grupos, carreras, períodos
+│   │       ├── auditoria/
+│   │       └── reportes/
+│   ├── (estudiante)/     # Rutas protegidas rol Estudiante
+│   │   ├── matricula/
+│   │   └── estado-cuenta/
+│   ├── (auth)/           # Login (público)
+│   └── api/              # Route handlers
+│       ├── matricula/
+│       ├── prerequisitos/
+│       ├── pagos/
+│       ├── cursos/
+│       ├── grupos/
+│       └── ...
+├── lib/
+│   ├── db.ts             # Singleton de Prisma
+│   ├── auth.ts           # Configuración NextAuth
+│   ├── api-helpers.ts    # requireRoles, ok(), err(), created()
+│   ├── auditoria.ts      # Helper para BitacoraAuditoria
+│   └── notificacion.ts   # Helper para notificaciones in-app
+prisma/
+└── schema.prisma         # Modelos de la base de datos
+```
+

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import PrintButton from "./PrintButton";
 
 const DIAS = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
@@ -58,7 +59,7 @@ export default async function ComprobantePage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <header className="bg-[#0B1F3A] text-white px-6 py-4 flex items-center gap-4">
+      <header className="bg-[#0B1F3A] text-white px-6 py-4 flex items-center gap-4 print:hidden">
         <Link href="/matricula" className="text-slate-400 hover:text-white text-sm">← Matrícula</Link>
         <span className="text-slate-600">|</span>
         <span className="font-semibold">Comprobante de Matrícula</span>
@@ -186,17 +187,24 @@ export default async function ComprobantePage({ params }: Props) {
             {/* Alerta si está pendiente */}
             {matricula.estado === "pendiente" && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
-                ⚠️ Tu matrícula está <strong>pendiente de pago</strong>. Dirígete a Tesorería para completar el proceso.
+                ⚠️ Tu matrícula está <strong>pendiente de pago</strong>. Dirígete a Tesorería o a tu estado de cuenta para completar el proceso.
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="bg-slate-50 border-t border-slate-200 px-8 py-4 flex justify-between items-center">
+          <div className="bg-slate-50 border-t border-slate-200 px-8 py-4 flex justify-between items-center print:hidden">
             <span className="text-xs text-slate-400">Sistema de Matrícula Universitaria</span>
-            <Link href="/matricula" className="text-sm text-[#2563EB] hover:underline">
-              ← Volver a Matrícula
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/matricula" className="text-sm text-[#2563EB] hover:underline">
+                ← Volver a Matrícula
+              </Link>
+              <PrintButton />
+            </div>
+          </div>
+          {/* Pie de página solo para impresión */}
+          <div className="hidden print:block px-8 py-4 border-t border-slate-200 text-center text-xs text-slate-400">
+            Sistema de Matrícula Universitaria · Documento generado el {new Date().toLocaleDateString("es-CR")}
           </div>
         </div>
       </div>

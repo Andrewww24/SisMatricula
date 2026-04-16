@@ -63,8 +63,22 @@ The enrollment endpoint `POST /api/matricula` enforces all rules in sequence:
 5. Credit limit: max 18 credits per period
 6. No schedule conflicts (checks `Horario.dia_semana` + time overlap)
 7. Prerequisites: all `PreRequisito` courses must have a `confirmada` matricula
+8. Corequisites: all `Correquisito` courses must be enrolled in the same period (estado ≠ cancelada)
 
 Enrollment uses `db.$transaction` + `upsert` on the unique constraint `[cedula_persona, id_grupo]` to handle reactivation of cancelled enrollments atomically.
+
+### Prerequisites & Corequisites (RF-07)
+Managed via `src/app/api/prerequisitos/`:
+
+| Endpoint | Method | Access | Description |
+|---|---|---|---|
+| `/api/prerequisitos?curso=X` | GET | All roles | Returns `{ prereqs, coreqs }` for a course |
+| `/api/prerequisitos` | POST | Admin | Body: `{ id_curso, id_curso_req, tipo: "prereq" \| "coreq" }`. Validates for duplicates and cycles |
+| `/api/prerequisitos/[id]?tipo=prereq\|coreq` | DELETE | Admin | Removes one prereq or coreq by its PK |
+
+- **Cycle detection**: Before inserting a prereq A→B, the API does a DFS traversal to verify B→...→A does not already exist.
+- **Admin UI**: "Requisitos" button (purple) on each row in `/admin/gestion/cursos` opens a modal to view/add/delete.
+- **Student UI**: ⓘ icon next to each course name in `/matricula` opens a read-only modal showing prereqs (⚠ amber) and coreqs (↔ blue).
 
 ### Data Model Key Relations
 ```
