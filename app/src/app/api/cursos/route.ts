@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         include: { requisito: { select: { id_curso: true, descripcion: true } } },
       },
     },
-    orderBy: [{ id_carrera: "asc" }, { descripcion: "asc" }],
+    orderBy: [{ id_carrera: "asc" }, { semestre: "asc" }, { descripcion: "asc" }],
   });
 
   return ok(cursos);
@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
     id_carrera?: number;
     creditos?: number;
     costo?: number;
+    semestre?: number | null;
+    tipo?: string;
     pre_requisitos?: number[];
   };
 
@@ -52,7 +54,10 @@ export async function POST(req: NextRequest) {
     return err("Body JSON inválido");
   }
 
-  const { descripcion, id_carrera, creditos = 0, costo = 0, pre_requisitos = [] } = body;
+  const { descripcion, id_carrera, creditos = 0, costo = 0, semestre = null, tipo = "obligatorio", pre_requisitos = [] } = body;
+
+  const TIPOS_VALIDOS = ["obligatorio", "electivo"];
+  if (!TIPOS_VALIDOS.includes(tipo)) return err("Tipo inválido. Use 'obligatorio' o 'electivo'");
 
   if (!descripcion?.trim()) return err("El campo 'descripcion' es requerido");
   if (!id_carrera) return err("El campo 'id_carrera' es requerido");
@@ -67,6 +72,8 @@ export async function POST(req: NextRequest) {
       id_carrera,
       creditos,
       costo: new Prisma.Decimal(costo),
+      semestre: semestre ?? null,
+      tipo,
       ...(pre_requisitos.length > 0 && {
         pre_requisitos: {
           create: pre_requisitos.map((id_curso_req) => ({ id_curso_req })),

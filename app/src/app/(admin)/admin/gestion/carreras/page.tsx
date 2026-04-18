@@ -133,6 +133,7 @@
                         </td>
                         <td className="px-5 py-3 text-right">
                         <div className="flex justify-end gap-2">
+                            <Link href={`/admin/gestion/carreras/${c.id_carrera}/plan`} className="text-emerald-600 hover:underline text-xs">Ver Plan</Link>
                             <button onClick={() => openEdit(c)} className="text-[#2563EB] hover:underline text-xs">Editar</button>
                             <button onClick={() => handleToggle(c)} className="text-slate-400 hover:text-slate-700 text-xs">
                             {c.activo ? "Desactivar" : "Activar"}
