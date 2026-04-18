@@ -10,6 +10,8 @@
     creditos: number;
     costo: number;
     activo: boolean;
+    semestre: number | null;
+    tipo: string | null;
     carrera: Carrera;
     pre_requisitos: { requisito: { id_curso: number; descripcion: string } }[];
     };
@@ -47,6 +49,8 @@
     const [formCarrera, setFormCarrera]   = useState("");
     const [formCreditos, setFormCreditos] = useState("0");
     const [formCosto, setFormCosto]       = useState("0");
+    const [formSemestre, setFormSemestre] = useState("");
+    const [formTipo, setFormTipo]         = useState("obligatorio");
 
     const fetchCursos = useCallback(async () => {
         setLoading(true);
@@ -75,6 +79,8 @@
         setFormCarrera(carreras[0]?.id_carrera.toString() ?? "");
         setFormCreditos("0");
         setFormCosto("0");
+        setFormSemestre("");
+        setFormTipo("obligatorio");
         setFormError("");
         setModalOpen(true);
     }
@@ -85,6 +91,8 @@
         setFormCarrera(c.carrera.id_carrera.toString());
         setFormCreditos(c.creditos.toString());
         setFormCosto(Number(c.costo).toString());
+        setFormSemestre(c.semestre != null ? c.semestre.toString() : "");
+        setFormTipo(c.tipo ?? "obligatorio");
         setFormError("");
         setModalOpen(true);
     }
@@ -98,6 +106,8 @@
         id_carrera: Number(formCarrera),
         creditos: Number(formCreditos),
         costo: Number(formCosto),
+        semestre: formSemestre !== "" ? Number(formSemestre) : null,
+        tipo: formTipo,
         };
 
         const url    = editCurso ? `/api/cursos/${editCurso.id_curso}` : "/api/cursos";
@@ -309,6 +319,30 @@
                     placeholder="ej. 45000"
                     className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                     />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Semestre</label>
+                    <select
+                    value={formSemestre}
+                    onChange={(e) => setFormSemestre(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    >
+                    <option value="">Sin semestre asignado</option>
+                    {[1,2,3,4,5,6,7,8,9,10].map((s) => (
+                        <option key={s} value={s}>Semestre {s}</option>
+                    ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+                    <select
+                    value={formTipo}
+                    onChange={(e) => setFormTipo(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    >
+                    <option value="obligatorio">Obligatorio</option>
+                    <option value="electivo">Electivo</option>
+                    </select>
                 </div>
                 {formError && (
                     <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{formError}</p>

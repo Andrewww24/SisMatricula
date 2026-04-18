@@ -50,6 +50,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
     creditos?: number;
     costo?: number;
     activo?: boolean;
+    semestre?: number | null;
+    tipo?: string;
   };
 
   try {
@@ -58,7 +60,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
     return err("Body JSON inválido");
   }
 
-  const { descripcion, id_carrera, creditos, costo, activo } = body;
+  const { descripcion, id_carrera, creditos, costo, activo, semestre, tipo } = body;
+
+  const TIPOS_VALIDOS = ["obligatorio", "electivo"];
+  if (tipo !== undefined && !TIPOS_VALIDOS.includes(tipo)) return err("Tipo inválido. Use 'obligatorio' o 'electivo'");
+  if (semestre !== undefined && semestre !== null && (semestre < 1 || semestre > 10)) return err("El semestre debe estar entre 1 y 10");
 
   const existing = await db.curso.findUnique({ where: { id_curso: Number(id) } });
   if (!existing) return err("Curso no encontrado", 404);
@@ -76,6 +82,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
       ...(creditos   !== undefined && { creditos }),
       ...(costo      !== undefined && { costo: new Prisma.Decimal(costo) }),
       ...(activo     !== undefined && { activo }),
+      ...(semestre   !== undefined && { semestre }),
+      ...(tipo       !== undefined && { tipo }),
     },
     include: {
       carrera: { select: { id_carrera: true, descripcion: true } },
